@@ -78,6 +78,11 @@ elif dev_mode:
 else:
 	raise Exception("Must use -p (--production) or -d (--dev)")
 
+
+if __name__ == "__main__":
+    import sys
+    innocent_macros(int(sys.argv[1]))
+
 # atexit.register(kill_subprocesses)
 
 # for p in subprocesses:
