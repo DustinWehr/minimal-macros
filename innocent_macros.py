@@ -3,95 +3,79 @@
 # from subprocess import Popen, PIPE
 
 
-import sys, os, time
+import os, time
 from expand_macros import run_macro_expansion
 from delete_macros import run_macro_deletion
 
-from constants import MACROS_PROJECT_ROOT, EXPANSION_SCRIPT_NAME, DELETION_SCRIPT_NAME
-from constants import TS_MACRO_DEFS_PATH, SRC_WITH_MACRO_OCCURRENCES_TO_PROCESS, PATHS_WITH_MACRO_OCCURRENCES_TO_PROCESS
 # disabled 2016/6/21 from constants import TS_IDENTITY_FNS_WITH_SIDE_EFFECTS_PATH,  
 
-# out_file_path = SRC_WITH_MACRO_OCCURRENCES_TO_PROCESS + ".out"
-def out_file_path(in_path): 
-	return in_path + (".out" if ".out" in sys.argv else "")
-
-production_mode = "-p" in sys.argv or "--production" in sys.argv
-dev_mode = "-d" in sys.argv or "--dev" in sys.argv
-watch_mode = "-w" in sys.argv or "--watch" in sys.argv
-
-assert dev_mode or production_mode, "Must use -p (--production) or -d (--dev)"
-
-FORCE = "force" in sys.argv
-
 subprocesses = dict()
-for path in PATHS_WITH_MACRO_OCCURRENCES_TO_PROCESS:
-	subprocesses[path] = 0
 
-def polling(file_paths, when_test_true):
+def polling(macro_defs_path, src_file_paths, when_test_true, use_dot_out=False, force=False):
 	while True:
-		for path in file_paths:
+		for path in src_file_paths:
 			moddate = os.stat(path)[8] 
 			if subprocesses[path] != moddate:
 				subprocesses[path] = moddate
-				when_test_true(path)
+				when_test_true(macro_defs_path, path, use_dot_out, force)
 		time.sleep(.5)
 
-def deletion_call_once(src_path):
+def deletion_call_once(macro_defs_path, src_path, use_dot_out=False, force=False):
 	run_macro_deletion(
-		TS_MACRO_DEFS_PATH, 
+		macro_defs_path, 
 		src_path, 
-		out_file_path(src_path),
-		ignore_HAS_BEEN_PROCESSED_MARKER=FORCE
+		src_path + ".out" if use_dot_out else src_path,
+		ignore_HAS_BEEN_PROCESSED_MARKER=false
 	)
 
-def expansion_call_once(src_path):
+def expansion_call_once(macro_defs_path, src_path, use_dot_out=False, force=False):
 	run_macro_expansion(
-		TS_MACRO_DEFS_PATH,
+		macro_defs_path,
 		src_path,
-		out_file_path(src_path),
-		ignore_HAS_BEEN_PROCESSED_MARKER=FORCE
+		src_path + ".out" if use_dot_out else src_path,
+		ignore_HAS_BEEN_PROCESSED_MARKER=force
 	)
 	
+def start_expansion(config, args):
+	production_mode = "-p" in args or "--production" in args
+	dev_mode = "-d" in args or "--dev" in args
+	watch_mode = "-w" in args or "--watch" in args
 
-if production_mode:
-	# print("\n[MCM] Production mode")
-	print("\n[MCM] Production mode")	
-	for path in PATHS_WITH_MACRO_OCCURRENCES_TO_PROCESS:
-		deletion_call_once(path)
-	
-	if watch_mode:
-		print("[MCM] Starting watch mode")
-		polling(PATHS_WITH_MACRO_OCCURRENCES_TO_PROCESS, deletion_call_once)
-		# for path in PATHS_WITH_MACRO_OCCURRENCES_TO_PROCESS:	
-			# watch_call(path, DELETION_SCRIPT_NAME)
-elif dev_mode:
-	# print("\n[MCM] Dev mode")
-	print("\n[MCM] Dev mode.")
-	for path in PATHS_WITH_MACRO_OCCURRENCES_TO_PROCESS:
-		expansion_call_once(path)
+	assert dev_mode or production_mode, "Must use -p (--production) or -d (--dev)"
 
-	if watch_mode:
-		print("[MCM] Starting watch mode")
-		polling(PATHS_WITH_MACRO_OCCURRENCES_TO_PROCESS, expansion_call_once)
-		# for path in PATHS_WITH_MACRO_OCCURRENCES_TO_PROCESS:
-			# watch_call(path, EXPANSION_SCRIPT_NAME)			
-else:
-	raise Exception("Must use -p (--production) or -d (--dev)")
+	use_dot_out = ".out" in args
+
+	force = "force" in args
+	if force:
+		print("force used")
+
+	for path in config['PATHS_WITH_MACRO_OCCURRENCES_TO_PROCESS']:
+		subprocesses[path] = 0
+
+	if production_mode:
+		print("\n[MCM] Production mode")	
+		for path in config['PATHS_WITH_MACRO_OCCURRENCES_TO_PROCESS']:
+			deletion_call_once(config['TS_MACRO_DEFS_PATH'], path, use_dot_out, force)
+		
+		if watch_mode:
+			print("[MCM] Starting watch mode")
+			polling(config['TS_MACRO_DEFS_PATH'],config['PATHS_WITH_MACRO_OCCURRENCES_TO_PROCESS'], 
+				deletion_call_once, use_dot_out, force)
+
+	elif dev_mode:
+		print("\n[MCM] Dev mode.")
+		for path in config['PATHS_WITH_MACRO_OCCURRENCES_TO_PROCESS']:
+			expansion_call_once(config['TS_MACRO_DEFS_PATH'], path, use_dot_out, force)
+
+		if watch_mode:
+			print("[MCM] Starting watch mode")
+			polling(config['TS_MACRO_DEFS_PATH'], config['PATHS_WITH_MACRO_OCCURRENCES_TO_PROCESS'], 
+				expansion_call_once, use_dot_out, force)
 
 
 if __name__ == "__main__":
     import sys
-    innocent_macros(int(sys.argv[1]))
-
-# atexit.register(kill_subprocesses)
-
-# for p in subprocesses:
-# 	p.wait()			
-
-
-# sys.exit()
-
-# os.wait()
+    innocent_macros(int(sys.argv[1]))    
 
 
 # OUT-OF-DATE** DOCS:
