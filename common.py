@@ -197,6 +197,15 @@ class OpenParagraph(Paragraph):
                  start_line_start_ind):
         Paragraph.__init__(self, lines, start_line_num, start_line_start_ind, None, None)
 
+def find_next_toplevel_in_str(s, start, char_to_find):
+    # print(start)
+    # print(s[start:start+300])
+    par = OpenParagraph([s], 0, start)
+    res = find_next_toplevel(par, char_to_find)
+    if not res:
+        return res
+    # print(res.stop_line_stop_ind)
+    return res.stop_line_stop_ind    
 
 
 def find_next_toplevel(par, char_to_find):
@@ -321,6 +330,9 @@ def find_next_toplevel(par, char_to_find):
     rv.stop_line_stop_ind = line_ind
 
     return rv
+
+
+
 
 
 
@@ -477,7 +489,22 @@ def maybe_readlines_and_maybe_modify_first(path, has_been_processed_marker, igno
     f.close()
     return lines
 
+def maybe_readfile_as_string_and_insert_marker(path, has_been_processed_marker, ignore_HAS_BEEN_PROCESSED_MARKER):
+    # print("in maybe_readlines_and_maybe_modify_first")
+    f = open(path, "r")
+    filestr = f.read()
+    f.close()
+    
+    # look in the first 100 characters only
+    if has_been_processed_marker in filestr[:100]: 
+        if not ignore_HAS_BEEN_PROCESSED_MARKER:
+            print("[MCM] Found '{}' in source. Will stop.".format(has_been_processed_marker))
+            f.close()
+            return None            
+    else:
+        filestr = has_been_processed_marker + "\n" + filestr        
 
+    return filestr
 
 def find_spot_for_console_msg(lines):
     """

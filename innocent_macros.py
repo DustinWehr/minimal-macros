@@ -5,6 +5,7 @@
 
 import os, time
 from expand_macros import run_macro_expansion
+# from delete_macros import run_macro_line_deletion
 from delete_macros import run_macro_deletion
 
 # disabled 2016/6/21 from constants import TS_IDENTITY_FNS_WITH_SIDE_EFFECTS_PATH,  
@@ -25,7 +26,7 @@ def deletion_call_once(macro_defs_path, src_path, use_dot_out=False, force=False
 		macro_defs_path, 
 		src_path, 
 		src_path + ".out" if use_dot_out else src_path,
-		ignore_HAS_BEEN_PROCESSED_MARKER=false
+		ignore_HAS_BEEN_PROCESSED_MARKER=force
 	)
 
 def expansion_call_once(macro_defs_path, src_path, use_dot_out=False, force=False):
@@ -36,7 +37,7 @@ def expansion_call_once(macro_defs_path, src_path, use_dot_out=False, force=Fals
 		ignore_HAS_BEEN_PROCESSED_MARKER=force
 	)
 	
-def start_expansion(config, args):
+def start_processing(config, args):
 	production_mode = "-p" in args or "--production" in args
 	dev_mode = "-d" in args or "--dev" in args
 	watch_mode = "-w" in args or "--watch" in args
