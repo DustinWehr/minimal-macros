@@ -164,18 +164,20 @@ def run_macro_deletion(path_to_macro_defs,  path_to_js_needing_processing, outfi
 
 		# fnname = match.group(1)
 		macrostart = match.start()
+		# outfile.write('noop()')
+		outfile.write('0')
 		outfile.write(jsstr[nextwriteind:macrostart])
 
 		next_after_openparen = match.end()
 		closeparen = find_next_toplevel_in_str(jsstr, next_after_openparen, ')')
 		if not closeparen:
 			raise Error
-		if jsstr[closeparen+1] == ';':
-			nextwriteind = closeparen + 2
-		else:
-			nextwriteind = closeparen + 1
+		# if jsstr[closeparen+1] == ';':
+			# nextwriteind = closeparen + 2
+		# else:
+		nextwriteind = closeparen + 1
 
-		deleted_chars += closeparen - macrostart + 2
+		deleted_chars += nextwriteind - macrostart + 2
 		deleted_macros += 1
 		print(jsstr[macrostart:nextwriteind])
 
