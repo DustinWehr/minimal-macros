@@ -144,8 +144,6 @@ def run_macro_deletion(path_to_macro_defs,  path_to_js_needing_processing, outfi
 
 	macronames_together_then_paren = r"(?:" + r"|".join(macronames) + r")\("
 	namespace_then_macronames_together_then_paren = r"(?:\w+\.)+" + macronames_together_then_paren
-	
-	print("TODO: need to match the namespace")
 
 	macro_re = re.compile(namespace_then_macronames_together_then_paren,re.MULTILINE)
 	
@@ -179,7 +177,7 @@ def run_macro_deletion(path_to_macro_defs,  path_to_js_needing_processing, outfi
 
 		deleted_chars += nextwriteind - macrostart + 2
 		deleted_macros += 1
-		print(jsstr[macrostart:nextwriteind])
+		# print(jsstr[macrostart:nextwriteind])
 
 	outfile.write(jsstr[nextwriteind:])	
 		
