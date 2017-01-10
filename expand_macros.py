@@ -118,6 +118,8 @@ def run_macro_expansion(path_to_macro_defs, path_to_js_needing_processing, outfi
     # Not worth trying any more. See ABOUT PERFORMANCE.txt
     if INSERT_CONSOLE_LOG_OF_BUILD_TIME:
         last_line_num_to_process = find_spot_for_console_msg(lines)
+        if not last_line_num_to_process:
+            last_line_num_to_process = len(lines) - 1    
     else:
         last_line_num_to_process = len(lines) - 1
 
