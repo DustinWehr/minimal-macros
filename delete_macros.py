@@ -18,7 +18,7 @@ def parse_macro_defs_file_to_macronames( macro_defs_file_path ):
 
 def run_macro_line_deletion(path_to_macro_defs,  path_to_js_needing_processing, outfile_path, ignore_HAS_BEEN_PROCESSED_MARKER=False):
 	# assert False, "TODO: this doesn't work because "
-	print("File: " + path_to_filename(path_to_js_needing_processing))
+	# print("File: " + path_to_filename(path_to_js_needing_processing))
 
 	starttime = perfcounter()
 	jslines = maybe_readlines_and_maybe_modify_first(
@@ -116,16 +116,17 @@ def run_macro_line_deletion(path_to_macro_defs,  path_to_js_needing_processing, 
 
 
 
-def run_macro_deletion(path_to_macro_defs,  path_to_js_needing_processing, outfile_path, ignore_HAS_BEEN_PROCESSED_MARKER=False):
+def run_macro_deletion(path_to_macro_defs,  path_to_js_needing_processing, outfile_path, ignore_HAS_BEEN_PROCESSED_MARKER, key):
 	# assert False, "TODO: this doesn't work because "
 	filename = path_to_filename(path_to_js_needing_processing)
-	print("File: " + filename)
+	# print("File: " + filename)
 
 	starttime = perfcounter()
 	jsstr = maybe_readfile_as_string_and_insert_marker(
 		path_to_js_needing_processing, 
 		HAS_BEEN_PROCESSED_MARKER__PRODUCTION,
-		ignore_HAS_BEEN_PROCESSED_MARKER )
+		ignore_HAS_BEEN_PROCESSED_MARKER,
+		key )
 	if not jsstr:
 		return
 

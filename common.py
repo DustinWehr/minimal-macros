@@ -409,7 +409,7 @@ def for_each_macro_def(macro_defs_file_path, f):
     while i < len(macro_defs_file_lines):
         line = macro_defs_file_lines[i]
         if line.startswith("//STOP"):
-            print("Found '//STOP'")
+            print("[IM] Found '//STOP' in macro defs file")
             return
         # match = SINGLELINE_NONVOID_MACRO_DEF_RE.match(line)
         # if match:
@@ -470,7 +470,7 @@ def for_each_macro_def(macro_defs_file_path, f):
 
 
 
-def maybe_readlines_and_maybe_modify_first(path, has_been_processed_marker, ignore_HAS_BEEN_PROCESSED_MARKER):
+def maybe_readlines_and_maybe_modify_first(path, has_been_processed_marker, ignore_HAS_BEEN_PROCESSED_MARKER, key):
     # print("in maybe_readlines_and_maybe_modify_first")
     f = open(path, "r")
     firstline = f.readline()
@@ -479,7 +479,7 @@ def maybe_readlines_and_maybe_modify_first(path, has_been_processed_marker, igno
         if ignore_HAS_BEEN_PROCESSED_MARKER:
             lines = [firstline]  # so we don't duplicate the has-been-processed marker
         else:
-            print("[MCM] Found '{}' in source. Will stop.".format(has_been_processed_marker))
+            print("\t[IM] Found '{}' in source for build {}. Will stop.".format(has_been_processed_marker, key))
             f.close()
             return None
     else:
@@ -489,7 +489,7 @@ def maybe_readlines_and_maybe_modify_first(path, has_been_processed_marker, igno
     f.close()
     return lines
 
-def maybe_readfile_as_string_and_insert_marker(path, has_been_processed_marker, ignore_HAS_BEEN_PROCESSED_MARKER):
+def maybe_readfile_as_string_and_insert_marker(path, has_been_processed_marker, ignore_HAS_BEEN_PROCESSED_MARKER, key):
     # print("in maybe_readlines_and_maybe_modify_first")
     f = open(path, "r")
     filestr = f.read()
@@ -498,7 +498,7 @@ def maybe_readfile_as_string_and_insert_marker(path, has_been_processed_marker, 
     # look in the first 100 characters only
     if has_been_processed_marker in filestr[:100]: 
         if not ignore_HAS_BEEN_PROCESSED_MARKER:
-            print("[MCM] Found '{}' in source. Will stop.".format(has_been_processed_marker))
+            print("\t[IM] Found '{}' in source for build {}. Will stop.".format(has_been_processed_marker, key))
             f.close()
             return None            
     else:

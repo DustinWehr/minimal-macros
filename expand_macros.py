@@ -71,19 +71,20 @@ formatter = Formatter()
 def path_to_filename(path_to_js_needing_processing):
     return path_to_js_needing_processing[len(ST_ROOT + "/out/"):]
 
-def run_macro_expansion(path_to_macro_defs, path_to_js_needing_processing, outfile_path, ignore_HAS_BEEN_PROCESSED_MARKER=False):
+def run_macro_expansion(path_to_macro_defs, path_to_js_needing_processing, outfile_path, ignore_HAS_BEEN_PROCESSED_MARKER, key):
     starttime = perfcounter()
     
 
     lines = maybe_readlines_and_maybe_modify_first(
         path_to_js_needing_processing,
         HAS_BEEN_PROCESSED_MARKER__DEV,
-        ignore_HAS_BEEN_PROCESSED_MARKER )
+        ignore_HAS_BEEN_PROCESSED_MARKER,
+        key )
     if lines is None:
         return
 
     # print("[MCM] Read {} js lines.".format(len(lines)))
-    print("[MCM] File: " + path_to_filename(path_to_js_needing_processing) + "; read {} js lines in {} ms.".format(len(lines), round(1000*(perfcounter() - starttime))))
+    # print("[MCM] File: " + path_to_filename(path_to_js_needing_processing) + "; read {} js lines in {} ms.".format(len(lines), round(1000*(perfcounter() - starttime))))
 
 
     # re that looks for //, /*, or a macro name on a single line
