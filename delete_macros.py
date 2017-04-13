@@ -13,7 +13,6 @@ def parse_macro_defs_file_to_macronames( macro_defs_file_path: str ) -> List[str
 	return macro_names
 
 def run_macro_deletion(path_to_macro_defs,  path_to_js_needing_processing, outfile_path, ignore_HAS_BEEN_PROCESSED_MARKER, key):
-	# assert False, "TODO: this doesn't work because "
 	filename = path_to_filename(path_to_js_needing_processing)
 	# print("File: " + filename)
 
@@ -26,18 +25,7 @@ def run_macro_deletion(path_to_macro_defs,  path_to_js_needing_processing, outfi
 	if not jsstr:
 		return
 
-	macros = parse_macro_defs_file_to_macronames( path_to_macro_defs )
-	
-	macronames = []
-
-	for k in macros:
-		if macros[k] == "whole-line":
-			macronames.append(k)
-		else:
-			print("todo: not hard to make this work with non-whole-line macros")
-			raise Exception
-
-	# print("macronames:", macronames)
+	macronames = parse_macro_defs_file_to_macronames( path_to_macro_defs )
 
 	macronames_together_then_paren = r"(?:" + r"|".join(macronames) + r")\("
 	namespace_then_macronames_together_then_paren = r"(?:\w+\.)+" + macronames_together_then_paren
@@ -48,7 +36,6 @@ def run_macro_deletion(path_to_macro_defs,  path_to_js_needing_processing, outfi
 
 	deleted_macros = 0
 	deleted_chars = 0
-	line_num = 0
 
 	nextwriteind = 0
 
@@ -57,19 +44,14 @@ def run_macro_deletion(path_to_macro_defs,  path_to_js_needing_processing, outfi
 		if not match:
 			break
 
-		# fnname = match.group(1)
 		macrostart = match.start()
-		# outfile.write('noop()')
-		outfile.write('0')
+		outfile.write('0') # sometimes need to insert a noop in minified code
 		outfile.write(jsstr[nextwriteind:macrostart])
 
 		next_after_openparen = match.end()
 		closeparen = find_next_toplevel_in_str(jsstr, next_after_openparen, ')')
 		if not closeparen:
 			raise Exception
-		# if jsstr[closeparen+1] == ';':
-			# nextwriteind = closeparen + 2
-		# else:
 		nextwriteind = closeparen + 1
 
 		deleted_chars += nextwriteind - macrostart + 2
