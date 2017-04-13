@@ -8,8 +8,6 @@ DELETION_SCRIPT_NAME = "delete_macros.py"
 ST_ROOT = "/Users/dustin/Sites/LfP/StructureTogether"
 
 TS_MACRO_DEFS_PATH = ST_ROOT + "/src/macros/dev-mode/dwmacros_multiline.ts"
-# TS_IDENTITY_FNS_WITH_SIDE_EFFECTS_PATH = ST_ROOT + "/src/macros/dev-mode/dwmacros_identity_fns_with_side_effects.ts"
-# SRC_WITH_MACRO_OCCURRENCES_TO_PROCESS = "/Users/dustin/Sites/LfP/StructureTogether/out/structure_social.js"
 SRC_WITH_MACRO_OCCURRENCES_TO_PROCESS = ST_ROOT + "/out/structure-together-main.webpack-entry-chunk.js"
 
 WITH_MACRO_OCCURRENCES_TO_PROCESS = [
@@ -52,18 +50,6 @@ else:
 
 END_BLOCK_COMMENT_RE = re.compile(r"\*/")
 
-# this isn't useful. even nn doesn't have this simple form.
-# see Evernote "for nn() and cast() ..." :-(
-# SINGLELINE_NONVOID_MACRO_DEF_RE = re.compile("".join([
-# 		r"^\s*function ",
-# 		r"([^\s,(]+)",  # function name (i.e. macro name)
-# 		r"(?:<[^(]+>)?", # type var stuff
-# 		r"\s*\(([^)]*)\)", # function parameters
-# 		r"\s*{\s*return\s*", # discard "return"
-# 		r"(.+[^\s])", # function body
-# 		r"\s*}\s*$"
-# 	]))
-
 
 SINGLELINE_MACRO_DEF_RE = re.compile("".join([
     r"^\s*(?:export)?\s*function ",
@@ -83,16 +69,5 @@ FIRST_LINE_OF_MULTILINE_MACRO_DEF_RE = re.compile("".join([
     r"(?:<[^(+]>)?",  # type var stuff
     r"\s*\(([^)]*)\)",  # function parameters
     r"(\s*:\s*[^\s{]+)?", # optional return type
-    r"\s*{\s*$"  # opening {
-    # r"\s*{\s*",  # opening {
-    # r"(?:// IGNORE\s*)?$" // caused error...
-]))
-
-FIRST_LINE_OF_MULTILINE_IDENTITY_FN_DEF_RE = re.compile("".join([
-    r"^\s*(?:export)?\s*function ",
-    r"([^\s,(<>]+)",  # function name (i.e. macro name)
-    r"(?:<[^(+]>)?",  # type var stuff
-    r"\s*\(([^)]*)\)",  # function parameters
-    r"\s*:\s*([^{])+",  # return type
     r"\s*{\s*$"  # opening {
 ]))

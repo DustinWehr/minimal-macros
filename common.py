@@ -1,8 +1,8 @@
 import time, re
-# from copy import copy
+
 from constants import DEB_PRINT_ON, ST_ROOT
 # from constants import VERBOSE_DEFAULT
-from constants import FIRST_LINE_OF_MULTILINE_IDENTITY_FN_DEF_RE, FIRST_LINE_OF_MULTILINE_MACRO_DEF_RE
+from constants import FIRST_LINE_OF_MULTILINE_MACRO_DEF_RE
 from constants import NON_WORD_CHAR, SINGLELINE_MACRO_DEF_RE
 
 

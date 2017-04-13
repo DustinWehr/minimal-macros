@@ -1,23 +1,19 @@
 #! /usr/bin/env python3
-import sys, re, datetime, time
+import sys, datetime
+from typing import *
 from common import *
 
 from constants import HAS_BEEN_PROCESSED_MARKER__PRODUCTION, INSERT_CONSOLE_LOG_OF_BUILD_TIME
-from constants import NON_WORD_CHAR_OR_START_OF_STRING, RE_FOR_STUFF_BEFORE_MACRO_NAME
 
-def parse_macro_defs_file_to_macronames( macro_defs_file_path ):
-	macros = {}
-
+def parse_macro_defs_file_to_macronames( macro_defs_file_path: str ) -> List[str]:
+	macro_names = []
 	def handle_single_macro_def(fnname, params_str, body_as_single_line):
-		macros[fnname] = "whole-line"
-
+		macro_names.append(fnname)
 	for_each_macro_def( macro_defs_file_path, handle_single_macro_def )
+	return macro_names
 
-	return macros
 
-
-def run_macro_line_deletion(path_to_macro_defs,  path_to_js_needing_processing, outfile_path, ignore_HAS_BEEN_PROCESSED_MARKER=False):
-	# assert False, "TODO: this doesn't work because "
+def run_macro_line_whole_line_deletion(path_to_macro_defs,  path_to_js_needing_processing, outfile_path, ignore_HAS_BEEN_PROCESSED_MARKER=False) -> None:
 	# print("File: " + path_to_filename(path_to_js_needing_processing))
 
 	starttime = perfcounter()
@@ -28,32 +24,15 @@ def run_macro_line_deletion(path_to_macro_defs,  path_to_js_needing_processing, 
 	if jslines is None:
 		return
 
-	macros = parse_macro_defs_file_to_macronames( path_to_macro_defs )
-	
-	macronames = []
-
-	for k in macros:
-		if macros[k] == "whole-line":
-			macronames.append(k)
-		else:
-			raise Error	
-	# macronames = macros.keys()
-
-	# print("macronames:", macronames)
-	# print("identitynames:", identitynames)
-
+	macronames = parse_macro_defs_file_to_macronames( path_to_macro_defs )
 	# macronames_with_paren = map(lambda x: x + r"\(", macronames)
 	# macronames_together = "(" + "|".join(macronames_with_paren) + ")"	
 	macronames_together_then_paren = r"(" + r"|".join(macronames) + r")\("
 	
-	
 	# Mar 16
 	macro_re_str = macronames_together_then_paren + r"(?:.*)\)\s*;\s*$"
 	# macro_re_str = r"^(?:\s*)" + macronames_together_then_paren + r"(?:.*)\)\s*;\s*$"
-	
-
 	macro_re = re.compile(macro_re_str)
-	
 
 	# NTS: I gave it a a good try at making "for line in file" work with inserting console log. 
 	# Not worth trying any more. See ABOUT PERFORMANCE.txt
@@ -75,19 +54,12 @@ def run_macro_line_deletion(path_to_macro_defs,  path_to_js_needing_processing, 
 		while True:
 			if line_ind == 0:
 				match = macro_re.search(line)
-				# match = macro_re.match(line)  # Mar 16
 				if match:
-					fnname = match.group(1)
-					# assert fnname != "nt"
-					if macros[fnname] == "whole-line":
-						deleted_lines += 1
-						outfile.write("\n")
-						line_num += 1
-						# continue
-						break
-					else:
-						raise Exception	
-			
+					deleted_lines += 1
+					outfile.write("\n")
+					line_num += 1
+					break
+
 			# if neither matched	
 			# begin simple version
 			# outfile.write(line)
@@ -113,9 +85,6 @@ def run_macro_line_deletion(path_to_macro_defs,  path_to_js_needing_processing, 
 	print("[MCM] {time} ms, deleted {num} lines (replaced with blank lines)\n".format(time=round(1000*(perfcounter() - starttime)), num=deleted_lines))
 
 
-
-
-
 def run_macro_deletion(path_to_macro_defs,  path_to_js_needing_processing, outfile_path, ignore_HAS_BEEN_PROCESSED_MARKER, key):
 	# assert False, "TODO: this doesn't work because "
 	filename = path_to_filename(path_to_js_needing_processing)
@@ -139,7 +108,7 @@ def run_macro_deletion(path_to_macro_defs,  path_to_js_needing_processing, outfi
 			macronames.append(k)
 		else:
 			print("todo: not hard to make this work with non-whole-line macros")
-			raise Error	
+			raise Exception
 
 	# print("macronames:", macronames)
 
@@ -170,7 +139,7 @@ def run_macro_deletion(path_to_macro_defs,  path_to_js_needing_processing, outfi
 		next_after_openparen = match.end()
 		closeparen = find_next_toplevel_in_str(jsstr, next_after_openparen, ')')
 		if not closeparen:
-			raise Error
+			raise Exception
 		# if jsstr[closeparen+1] == ';':
 			# nextwriteind = closeparen + 2
 		# else:
