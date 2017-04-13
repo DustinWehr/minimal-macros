@@ -74,7 +74,8 @@ def path_to_filename(path_to_js_needing_processing):
 def run_macro_expansion(path_to_macro_defs, path_to_js_needing_processing, outfile_path, ignore_HAS_BEEN_PROCESSED_MARKER, key):
     starttime = perfcounter()
     
-
+    # Use readlines() instead of read() has very insignificant performance cost, at least on my SSD
+    # It's also useful to have the lines.
     lines = maybe_readlines_and_maybe_modify_first(
         path_to_js_needing_processing,
         HAS_BEEN_PROCESSED_MARKER__DEV,
@@ -85,7 +86,6 @@ def run_macro_expansion(path_to_macro_defs, path_to_js_needing_processing, outfi
 
     # print("[MCM] Read {} js lines.".format(len(lines)))
     # print("[MCM] File: " + path_to_filename(path_to_js_needing_processing) + "; read {} js lines in {} ms.".format(len(lines), round(1000*(perfcounter() - starttime))))
-
 
     # re that looks for //, /*, or a macro name on a single line
     def make_main_expansion_re( macronames ):
@@ -108,7 +108,7 @@ def run_macro_expansion(path_to_macro_defs, path_to_js_needing_processing, outfi
         outfile.write(s)
         return line_ind + len(s)
 
-    start_macro_processing = perfcounter()
+    # start_macro_processing = perfcounter()
     macros = parse_macro_defs_file_to_substitution_objects(path_to_macro_defs)
     macronames = list(macros.keys())
     main_re = make_main_expansion_re(macronames)
@@ -125,25 +125,21 @@ def run_macro_expansion(path_to_macro_defs, path_to_js_needing_processing, outfi
         last_line_num_to_process = len(lines) - 1
 
     # print("last_line_num_to_process: ", last_line_num_to_process )
-
     # file_str = "".join(lines) # concatenation of lines
 
     in_multiline_comment = False
     while line_num <= last_line_num_to_process:
-        line = lines[line_num]
 
         while True:
             line = lines[line_num]
 
             if in_multiline_comment:
-                # assert line_ind == 0
                 match = END_BLOCK_COMMENT_RE.search(line, line_ind)
                 if match: # */ found, with the / at index k:
                     # print("{} - end block comment. line_ind: {}. match.start()+1: {}. match.end()+1: {}, match.start(0)+1: {}. line[:-1]:\n{}\nmatch.group(0):\n{}".format(line_num+1,line_ind+1, match.start()+1, match.end()+1, match.start(0)+1, line[:-1], match.group(0)))
                     k = match.end()
                     line_ind = output_unchanged(line[line_ind:k]) # was k+1, which was wrong!
                     in_multiline_comment = False
-                    # print("new line_ind:", line_ind)
                     continue # redundant
                 else:
                     line_ind = output_unchanged(line[line_ind:])
@@ -157,7 +153,6 @@ def run_macro_expansion(path_to_macro_defs, path_to_js_needing_processing, outfi
                     match = main_re.search(line)
                 # line[line_ind:] is the remainder of the line
                 if not match:
-                    # print("no match at line ", line_num)
                     line_ind = output_unchanged(line[line_ind:])
                     line_ind = 0
                     line_num += 1
@@ -186,20 +181,13 @@ def run_macro_expansion(path_to_macro_defs, path_to_js_needing_processing, outfi
                     break
                 else: # macro name found
                     start_match_line_ind = match.start()
-                    # print(line_num)
-                    # print "match at ", line_num, start_match_line_ind
-                    # print(match.groups(), match.end()-1)
                     left_paren_ind = match.end() - 1
-                    # debprint("<"+line[line_ind:start_match_line_ind + 1]+">")
                     char_before_macro_or_empty, macroname_with_paren = match.groups()
                     if len(char_before_macro_or_empty) == 1:
                         line_ind = output_unchanged(line[line_ind:start_match_line_ind + 1])
                     else:
                         line_ind = output_unchanged(line[line_ind:start_match_line_ind])
                     macroname = macroname_with_paren[:-1]
-
-                    # if not line.strip().startswith(macroname):
-                    # 	print( "found interline macro occurrence:", line)
 
                     in_par = OpenParagraph(lines, line_num, left_paren_ind+1)
                     args_par = find_next_toplevel(in_par, ')')
@@ -208,16 +196,15 @@ def run_macro_expansion(path_to_macro_defs, path_to_js_needing_processing, outfi
 
                     list_of_arg_pars = split_by_top_level_commas(args_par)
 
-                    # OPT: don't need to form this list
+                    # OPT: don't need to form this list (really?)
                     args_list = list(map(lambda x: x.asSingleLine(), list_of_arg_pars))
 
-                    # replacement_text = process_args_to_macro_app(macros[macroname], args_list)
                     replacement_text = macros[macroname].simult_subst(args_list)
 
-                    args_par.stop_line_stop_ind += 1 # put the ')' back..?
+                    args_par.stop_line_stop_ind += 1 # now last char is the char after the ')'
 
                     if (args_par.stop_line_num - line_num) != 0:
-                        WarningMsg("WARNING: macro application at line {} spans multiple lines. Line numbers could be affected.".format(line_num), args_par.stop_line_num - line_num + 1, len(args_list))      
+                        WarningMsg("WARNING: macro application at line {} spans multiple lines. Line numbers could be affected.".format(line_num), args_par.stop_line_num - line_num + 1, len(args_list))
                         # replacement_text += "\n"*(nextline_num - line_num)
                         # print(".....", len(args_list), nextline_num+1, nextline_ind_of_right_paren+1, args_list)
                         # print(replacement_text)

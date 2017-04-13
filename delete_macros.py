@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 import sys, datetime
-from typing import *
+# from typing import *
 from common import *
 
 from constants import HAS_BEEN_PROCESSED_MARKER__PRODUCTION, INSERT_CONSOLE_LOG_OF_BUILD_TIME
