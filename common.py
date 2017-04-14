@@ -1,4 +1,5 @@
 import time, re
+from typing import *
 
 from constants import DEB_PRINT_ON, ST_ROOT
 # from constants import VERBOSE_DEFAULT
@@ -29,27 +30,12 @@ def perfcounter():
     return time.clock()
 
 
-#
-# def strOccurrenceisTokenOccurrence(token, text, start):
-#     """
-#     PRE: text[start: start + len(token)] == token
-#     :param token:
-#     :param text:
-#     :param start:
-#     :return: true iff text[start: start + len(token)] is not within a larger token
-#     """
-#     end = start + len(token)
-#     if start == 0 or re.search(NON_WORD_CHAR, text[start-1]):
-#         return end == len(text) - 1 or re.search(NON_WORD_CHAR, text[end+1])
-#     else:
-#         return False
-
-def couldBeToken(start, stop, text):
+def couldBeToken(start:int, stop:int, text:str) -> bool:
     """
-    :param start:
-    :param stop:
-    :param text:
-    :return:
+    Pre: 0 <= start <= stop <= len(text) - 1
+    Return true iff
+        start == 0 or text[start-1] is a non-word character, and
+        stop == len(text)-1 or text[stop+1] is a non-word character
     """
     if start == 0 or re.search(NON_WORD_CHAR, text[start-1]):
         return stop == len(text) - 1 or re.search(NON_WORD_CHAR, text[stop+1])
@@ -57,10 +43,10 @@ def couldBeToken(start, stop, text):
         return False
 
 
-def updateInStrLit(in_str_lit, i, text):
+def updateInStrLit(in_str_lit:dict[str,bool], i:int, text:str) -> None:
     """
     :param in_str_lit: dict {"'":boolean, '"':boolean, '`':boolean} that is all false if i == 0, and otherwise
-     tells whether text[i-1] is within a string literal or the corresponding type.
+     tells whether text[i-1] is within a string literal of the corresponding type.
     :param i:
     :param text:
     :return:
@@ -80,10 +66,10 @@ def updateInStrLit(in_str_lit, i, text):
         if text[min(i - 1, 0)] != "\\" and not in_str_lit["'"] and not in_str_lit['"']:
             in_str_lit['`'] = not in_str_lit['`']
 
-def inStrLiteral(in_str_lit:dict) -> bool:
+def inStrLiteral(in_str_lit:dict[str,bool]) -> bool:
     return in_str_lit['"'] or in_str_lit["'"] or in_str_lit["`"]
 
-def updateOpenBracketCnts(open_bracket_cnt:dict, i:int, text:str) -> None:
+def updateOpenBracketCnts(open_bracket_cnt:dict[str,int], i:int, text:str) -> None:
     """
     PRE: text[i] is not within a string literal
     :param open_bracket_cnt:
@@ -104,28 +90,14 @@ def updateOpenBracketCnts(open_bracket_cnt:dict, i:int, text:str) -> None:
     elif a == "]":
         open_bracket_cnt["["] -= 1
 
-def bracketsBalanced(open_bracket_cnt:dict) -> bool:
+def bracketsBalanced(open_bracket_cnt:dict[str,int]) -> bool:
     return open_bracket_cnt["("] == open_bracket_cnt["{"] == open_bracket_cnt["["] == 0
 
-def unmatchedCloseBracket(open_bracket_cnt:dict) -> bool:
+def unmatchedCloseBracket(open_bracket_cnt:dict[str,int]) -> bool:
     return open_bracket_cnt["("] < 0 or open_bracket_cnt["{"] < 0 or open_bracket_cnt["["] < 0
 
-"""
-not yet used
-class Line(object):
-    def __init__(self,
-                 lineslst,
-                 line_num,
-                 start_ind = None,
-                 stop_ind = None
-                 ):
-        self.lineslst = lineslst
-        self.line_num = line_num
-        self.start_ind = start_ind or 0
-        self.stop_ind = stop_ind or len(lines[line_num]) - 1
-"""
-
 def escapeQuotes(x):
+    # TODO: this is probably not a fully general solution
     return x.replace("'","\\'").replace('"','\\"').replace("`","\\`")
 
 class Chunk(object):
@@ -133,15 +105,14 @@ class Chunk(object):
     stop_line_stop_ind is INCLUSIVE
     stop_line_stop_ind is None iff stop_line_num is None
     A Chunk is "open" iff stop_line_num == None. It's "closed" otherwise.
-
     """
 
     def __init__(self,
-                 lines,
-                 start_line_num,
-                 start_line_start_ind,
-                 stop_line_num,
-                 stop_line_stop_ind
+                 lines:List[str],
+                 start_line_num:int,
+                 start_line_start_ind:int,
+                 stop_line_num:int,
+                 stop_line_stop_ind:int
                  ):
         self.lines = lines
         self.start_line_num = start_line_num
@@ -161,7 +132,7 @@ class Chunk(object):
             assert self.stop_line_num >= 1, "Empty pararaph? " + repr(self)
             self.stop_line_num -= 1
             self.stop_line_stop_ind = len(
-                self.lines[self.stop_line_num]) - 1  # so will this always be the newline char?
+                self.lines[self.stop_line_num]) - 1  # this is not necessarily the newline char (i think)
 
     def asListOfLineStrings(self):
         if self.stop_line_num is None or self.stop_line_stop_ind is None:
@@ -197,26 +168,23 @@ class OpenChunk(Chunk):
                  start_line_start_ind):
         Chunk.__init__(self, lines, start_line_num, start_line_start_ind, None, None)
 
-def find_next_toplevel_in_str(s, start, char_to_find):
-    # print(start)
-    # print(s[start:start+300])
-    par = OpenChunk([s], 0, start)
-    res = find_next_toplevel(par, char_to_find)
+def find_next_toplevel_in_str(s:str, start:ind, char_to_find:str) -> int:
+    chunk = OpenChunk([s], 0, start)
+    res = find_next_toplevel(chunk, char_to_find)
     if not res:
         return res
-    # print(res.stop_line_stop_ind)
-    return res.stop_line_stop_ind    
+    return res.stop_line_stop_ind
 
 
-def find_next_toplevel(par, char_to_find):
+def find_next_toplevel(chunk, char_to_find) -> Union[Chunk,None]:
     r"""
-    @:param par : Chunk
+    @:param chunk : Chunk
     @:param char_to_find : character
     @returns None if none found, or else a Chunk with
-    lines = par.lines
-    start_line_num = par.start_line_num
-    start_line_ind = par.start_line_ind
-    stop_line_num = first line in par containing a top-level char_to_find
+    lines = chunk.lines
+    start_line_num = chunk.start_line_num
+    start_line_ind = chunk.start_line_ind
+    stop_line_num = first line in chunk containing a top-level char_to_find
     stop_line_stop_ind = index in stop_line_num of the top-level char_to_find
 
     >>> aline = ['functioncall(0,1,2)\n']
@@ -231,9 +199,9 @@ def find_next_toplevel(par, char_to_find):
     >>> lines2 = [ '"Problem with prop " + p + ", allowed_flatprops(p) is " + allowed_flatprops[p] + ", nodetype is " + node.nodetype']
     >>> find_next_toplevel(OpenChunk(lines2, 0, 0), ',')
     """
-    rv = Chunk(par.lines, par.start_line_num, par.start_line_start_ind, None, None)
+    rv = Chunk(chunk.lines, chunk.start_line_num, chunk.start_line_start_ind, None, None)
 
-    line_ind = par.start_line_start_ind
+    line_ind = chunk.start_line_start_ind
 
     # Number of open Round, Square, and Curly brackets, respectively, in the part of lines scanned so far
     # i.e. up to lines[line_num][line_ind]
@@ -244,17 +212,17 @@ def find_next_toplevel(par, char_to_find):
     in_str_lit = {"'":False, '"':False, '`':False}
 
     found = False
-    line_num = par.start_line_num
+    line_num = chunk.start_line_num
 
-    stop_line_num = par.stop_line_num if (par.stop_line_num is not None) else len(par.lines) - 1
+    stop_line_num = chunk.stop_line_num if (chunk.stop_line_num is not None) else len(chunk.lines) - 1
 
-    assert stop_line_num <= len(par.lines) - 1, repr(par)
+    assert stop_line_num <= len(chunk.lines) - 1, repr(chunk)
     while not found and line_num <= stop_line_num:
 
-        line = par.lines[line_num]
+        line = chunk.lines[line_num]
 
-        if par.stop_line_stop_ind is not None and line_num == par.stop_line_num:
-            stop_line_ind = par.stop_line_stop_ind
+        if chunk.stop_line_stop_ind is not None and line_num == chunk.stop_line_num:
+            stop_line_ind = chunk.stop_line_stop_ind
         else:
             stop_line_ind = len(line) - 1
 
@@ -271,26 +239,16 @@ def find_next_toplevel(par, char_to_find):
                 if a == char_to_find:
                     # check if brackets are balanced and we're not inside a string literal, in which case we're done.
                     if bracketsBalanced(bracket_cnts) and not inStrLiteral(in_str_lit):
-                        # debprint("found on line {} (1-based) at ind {} (1-based)".format(line_num + 1, line_ind + 1))
                         # next two lines cause both loops to exit
                         found = True
                         break
 
                 updateOpenBracketCnts(bracket_cnts, line_ind, line)
 
-            # BAD --> if we're at the end of the line, i.e. at a line ending character, then break this loop,
-            # which continues the outer loop. this isn't necessary, but might as well since
-            # all the remaining if-statement conditions will be false.
-            # Bad because the last character need not be an endline.
-            # later --> ...wait really?
-            # if line_ind == len(line) - 1:
-            # 	debprint(a, " is a line ending?")
-            # 	break
             updateInStrLit(in_str_lit, line_ind, line)
 
 
             if unmatchedCloseBracket(bracket_cnts):
-                # msg = "[MCM] Unmatched close-paren/bracket at line {} (1-based)?\n".format(start_line_num + line_endings_passed + 1)
                 msg = "[MCM] There seems to be an unmatched close-paren/bracket in line {}[1-based], found while looking for the next '{}'.\n".format(
                     line_num + 1, char_to_find)
 
@@ -314,8 +272,7 @@ def find_next_toplevel(par, char_to_find):
 
     # next checks aren't necessary if macros file has been parsed by tsc:
     if not bracketsBalanced(bracket_cnts) or inStrLiteral(in_str_lit):
-        print(repr(par))
-        # msg = "[MCM] Unclosed paren/bracket or quote at line {} (1-based)?\n".format(start_line_num + line_endings_passed + 1)
+        print(repr(chunk))
         msg = "[MCM] Unclosed paren/bracket or quote at line {} (1-based)?\n".format(line_num + 1)
         for b in bracket_cnts.keys():
             if bracket_cnts[b] < 0:  msg += "Unclosed " + bracket_names[b] + "\n"
@@ -337,16 +294,16 @@ def find_next_toplevel(par, char_to_find):
 
 
 
-def split_by_top_level_commas(bigger_par):
+def split_by_top_level_commas(bigger_chunk):
     """
-    Takes a CLOSED chunk @bigger_par of a valid function call,
+    Takes a CLOSED chunk @bigger_chunk of a valid function call in some source text,
     NO -> optionally beginning and ending with the opening '(' and closing ')'
     Returns a list of chunks for the individual arguments, each of which may span multiple lines.
     """
     r"""
     >>> lines = ["debugtest(this.node_class_names.forEach(function (nodetype) {\n", "	dassert(_this.strict_subtype_reln.has(nodetype), nodetype);\n", "	dassert(_this.strict_supertype_reln.has(nodetype), nodetype);\n", "}));"]
-    >>> par = Chunk(lines, 0, 10, 3, 1)
-    >>> rv = split_by_top_level_commas(par)
+    >>> chunk = Chunk(lines, 0, 10, 3, 1)
+    >>> rv = split_by_top_level_commas(chunk)
     >>> map( lambda x: x.numbersTuple(), rv)
     [(0, 10, 3, 1)]
     >>> lines2 = ["fn(10 , 20,\n", "30,\n", "40,50\n", "   )\n"]
@@ -365,31 +322,28 @@ def split_by_top_level_commas(bigger_par):
     >>> map( lambda x: x.numbersTuple(), rv4)
     3
     """
-    # OLD:
-    # assert bigger_par.lines[bigger_par.start_line_num][bigger_par.start_line_start_ind] == "("
-    # assert bigger_par.lines[bigger_par.stop_line_num][bigger_par.stop_line_stop_ind] == ")"
 
-    # idea: use find_next_toplevel repeatedly until end of par
+    # idea: use find_next_toplevel repeatedly until end of chunk
     arg_pars = []
-    remaining_args_par = Chunk(
-        bigger_par.lines,
-        bigger_par.start_line_num,
-        bigger_par.start_line_start_ind,
-        bigger_par.stop_line_num,
-        bigger_par.stop_line_stop_ind
+    remaining_args_chunk = Chunk(
+        bigger_chunk.lines,
+        bigger_chunk.start_line_num,
+        bigger_chunk.start_line_start_ind,
+        bigger_chunk.stop_line_num,
+        bigger_chunk.stop_line_stop_ind
     )
 
     while True:
-        next_arg_par = find_next_toplevel(remaining_args_par, ",")
-        if next_arg_par is not None:
+        next_arg_chunk = find_next_toplevel(remaining_args_chunk, ",")
+        if next_arg_chunk is not None:
             # for next iteration of loop:
-            remaining_args_par.start_line_num = next_arg_par.stop_line_num
-            remaining_args_par.start_line_start_ind = next_arg_par.stop_line_stop_ind + 1  # start just after the ','
-            next_arg_par.delete_last_char() #  adjust to not include the ','
-            arg_pars.append(next_arg_par)
+            remaining_args_chunk.start_line_num = next_arg_chunk.stop_line_num
+            remaining_args_chunk.start_line_start_ind = next_arg_chunk.stop_line_stop_ind + 1  # start just after the ','
+            next_arg_chunk.delete_last_char() #  adjust to not include the ','
+            arg_pars.append(next_arg_chunk)
         else:
-            # then we're done, which means the final arg is just remaining_args_par
-            arg_pars.append(remaining_args_par)
+            # then we're done, which means the final arg is just remaining_args_chunk
+            arg_pars.append(remaining_args_chunk)
             break
     return arg_pars
 
@@ -433,11 +387,11 @@ def for_each_macro_def(macro_defs_file_path, f):
         if match:
             fnname, params_str, opt_returntype = match.groups()
 
-            body_par = find_next_toplevel(OpenChunk(macro_defs_file_lines, i + 1, 0), "}")
+            body_chunk = find_next_toplevel(OpenChunk(macro_defs_file_lines, i + 1, 0), "}")
 
             # remove any single-line comments, and exclude the line containing the final }
             body_lines = filter(lambda x: not x.strip().startswith("//"),
-                                body_par.lines[body_par.start_line_num:body_par.stop_line_num])
+                                body_chunk.lines[body_chunk.start_line_num:body_chunk.stop_line_num])
 
             # remove the endlines and extra whitespace, then join as single string
             body_str = "".join(map(lambda s: s.strip(), body_lines))
@@ -450,8 +404,7 @@ def for_each_macro_def(macro_defs_file_path, f):
 
                 print("\nFOUND NON-VOID NON-IDENTITY MACRO. body_str is\n" + body_str + "\n")
 
-            # print(body_str)
-            i = body_par.stop_line_num + 1
+            i = body_chunk.stop_line_num + 1
 
             
             f(fnname, params_str, body_str)
@@ -490,7 +443,7 @@ def maybe_readlines_and_maybe_modify_first(path, has_been_processed_marker, igno
     return lines
 
 def maybe_readfile_as_string_and_insert_marker(path, has_been_processed_marker, ignore_HAS_BEEN_PROCESSED_MARKER, key):
-    # print("in maybe_readlines_and_maybe_modify_first")
+    # print("in maybe_readfile_as_string_and_insert_marker")
     f = open(path, "r")
     filestr = f.read()
     f.close()
@@ -506,7 +459,7 @@ def maybe_readfile_as_string_and_insert_marker(path, has_been_processed_marker, 
 
     return filestr
 
-def find_spot_for_console_msg(lines):
+def find_spot_for_console_msg(lines: List[str]):
     """
     look backwards through lines to find index k of the file's last line that doesn't start with //
     # return k

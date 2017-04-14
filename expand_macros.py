@@ -189,22 +189,22 @@ def run_macro_expansion(path_to_macro_defs, path_to_js_needing_processing, outfi
                         line_ind = output_unchanged(line[line_ind:start_match_line_ind])
                     macroname = macroname_with_paren[:-1]
 
-                    in_par = OpenChunk(lines, line_num, left_paren_ind+1)
-                    args_par = find_next_toplevel(in_par, ')')
+                    in_chunk = OpenChunk(lines, line_num, left_paren_ind+1)
+                    args_chunk = find_next_toplevel(in_chunk, ')')
 
-                    args_par.stop_line_stop_ind -= 1  # now last char is the char before the ')'
+                    args_chunk.stop_line_stop_ind -= 1  # now last char is the char before the ')'
 
-                    list_of_arg_pars = split_by_top_level_commas(args_par)
+                    list_of_arg_pars = split_by_top_level_commas(args_chunk)
 
                     # OPT: don't need to form this list (really?)
                     args_list = list(map(lambda x: x.asSingleLine(), list_of_arg_pars))
 
                     replacement_text = macros[macroname].simult_subst(args_list)
 
-                    args_par.stop_line_stop_ind += 1 # now last char is the char after the ')'
+                    args_chunk.stop_line_stop_ind += 1 # now last char is the char after the ')'
 
-                    if (args_par.stop_line_num - line_num) != 0:
-                        WarningMsg("WARNING: macro application at line {} spans multiple lines. Line numbers could be affected.".format(line_num), args_par.stop_line_num - line_num + 1, len(args_list))
+                    if (args_chunk.stop_line_num - line_num) != 0:
+                        WarningMsg("WARNING: macro application at line {} spans multiple lines. Line numbers could be affected.".format(line_num), args_chunk.stop_line_num - line_num + 1, len(args_list))
                         # replacement_text += "\n"*(nextline_num - line_num)
                         # print(".....", len(args_list), nextline_num+1, nextline_ind_of_right_paren+1, args_list)
                         # print(replacement_text)
@@ -213,8 +213,8 @@ def run_macro_expansion(path_to_macro_defs, path_to_js_needing_processing, outfi
                     num_matches += 1
 
                     outfile.write(replacement_text)
-                    line_num = args_par.stop_line_num  # this will often be a noop, namely when the macro and its args are on the same line
-                    line_ind = args_par.stop_line_stop_ind + 1
+                    line_num = args_chunk.stop_line_num  # this will often be a noop, namely when the macro and its args are on the same line
+                    line_ind = args_chunk.stop_line_stop_ind + 1
                     continue # redundant
 
 
