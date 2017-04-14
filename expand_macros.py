@@ -34,7 +34,7 @@ def parse_macro_defs_file_to_substitution_objects( macro_defs_file_path, verbose
         macros[fnname] = MacroDefn(fnname, params_str, body_as_single_line)
 
     def handle_single_macro_def(fnname, params_str, body_as_single_line):
-        possibly_typed_params_list_pars = split_by_top_level_commas(Paragraph.fromSingleLine(params_str))
+        possibly_typed_params_list_pars = split_by_top_level_commas(Chunk.fromSingleLine(params_str))
         possibly_typed_params_list = list(map(lambda x: x.asSingleLine(), possibly_typed_params_list_pars))
 
         has_rest_param = len(possibly_typed_params_list) > 0 and "..." in possibly_typed_params_list[-1]
@@ -189,7 +189,7 @@ def run_macro_expansion(path_to_macro_defs, path_to_js_needing_processing, outfi
                         line_ind = output_unchanged(line[line_ind:start_match_line_ind])
                     macroname = macroname_with_paren[:-1]
 
-                    in_par = OpenParagraph(lines, line_num, left_paren_ind+1)
+                    in_par = OpenChunk(lines, line_num, left_paren_ind+1)
                     args_par = find_next_toplevel(in_par, ')')
 
                     args_par.stop_line_stop_ind -= 1  # now last char is the char before the ')'

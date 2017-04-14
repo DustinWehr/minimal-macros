@@ -2,7 +2,7 @@ import re
 from copy import copy
 
 from common import split_by_top_level_commas
-from common import Paragraph, escapeQuotes
+from common import Chunk, escapeQuotes
 from common import couldBeToken, inStrLiteral, updateInStrLit
 
 from constants import DEBUGGING
@@ -59,7 +59,7 @@ class MacroDefn:
                 if body_str[i] == "`" and self._pos_is_in_str_literal[i]:
                     WarningMsg("You've used a backquote in a macro definition. As of now, this probably means your code will only run in a js interpreter that supports template strings (es6).")
 
-        possibly_typed_params_list_pars = split_by_top_level_commas(Paragraph.fromSingleLine(params_str))
+        possibly_typed_params_list_pars = split_by_top_level_commas(Chunk.fromSingleLine(params_str))
         possibly_typed_params_list = list(map(lambda x: x.asSingleLine(), possibly_typed_params_list_pars))
 
         self._numRestParams = 1 if len(possibly_typed_params_list) > 0 and "..." in possibly_typed_params_list[-1] else 0

@@ -80,10 +80,10 @@ def updateInStrLit(in_str_lit, i, text):
         if text[min(i - 1, 0)] != "\\" and not in_str_lit["'"] and not in_str_lit['"']:
             in_str_lit['`'] = not in_str_lit['`']
 
-def inStrLiteral(in_str_lit):
+def inStrLiteral(in_str_lit:dict) -> bool:
     return in_str_lit['"'] or in_str_lit["'"] or in_str_lit["`"]
 
-def updateOpenBracketCnts(open_bracket_cnt, i, text):
+def updateOpenBracketCnts(open_bracket_cnt:dict, i:int, text:str) -> None:
     """
     PRE: text[i] is not within a string literal
     :param open_bracket_cnt:
@@ -104,10 +104,10 @@ def updateOpenBracketCnts(open_bracket_cnt, i, text):
     elif a == "]":
         open_bracket_cnt["["] -= 1
 
-def bracketsBalanced(open_bracket_cnt):
+def bracketsBalanced(open_bracket_cnt:dict) -> bool:
     return open_bracket_cnt["("] == open_bracket_cnt["{"] == open_bracket_cnt["["] == 0
 
-def unmatchedCloseBracket(open_bracket_cnt):
+def unmatchedCloseBracket(open_bracket_cnt:dict) -> bool:
     return open_bracket_cnt["("] < 0 or open_bracket_cnt["{"] < 0 or open_bracket_cnt["["] < 0
 
 """
@@ -128,11 +128,11 @@ class Line(object):
 def escapeQuotes(x):
     return x.replace("'","\\'").replace('"','\\"').replace("`","\\`")
 
-class Paragraph(object):
+class Chunk(object):
     """
     stop_line_stop_ind is INCLUSIVE
     stop_line_stop_ind is None iff stop_line_num is None
-    A Paragraph is "open" iff stop_line_num == None. It's "closed" otherwise.
+    A Chunk is "open" iff stop_line_num == None. It's "closed" otherwise.
 
     """
 
@@ -165,7 +165,7 @@ class Paragraph(object):
 
     def asListOfLineStrings(self):
         if self.stop_line_num is None or self.stop_line_stop_ind is None:
-            raise Exception("Method undefined on unclosed paragraph")
+            raise Exception("Method undefined on open chunk")
         if self.start_line_num < self.stop_line_num:
             rv = [self.lines[self.start_line_num][self.start_line_start_ind:]]
             rv.extend(self.lines[self.start_line_num + 1: self.stop_line_num])
@@ -175,32 +175,32 @@ class Paragraph(object):
             return [self.lines[self.start_line_num][self.start_line_start_ind:self.stop_line_stop_ind + 1]]
 
     @staticmethod
-    def fromSingleLine(s):
-        return Paragraph([s], 0, 0, 0, len(s) - 1)
+    def fromSingleLine(s:str) -> 'Chunk':
+        return Chunk([s], 0, 0, 0, len(s) - 1)
 
     def asSingleLine(self):
         if self.stop_line_num is None or self.stop_line_stop_ind is None:
-            raise Exception("Method undefined on open paragraph")
+            raise Exception("Method undefined on open chunk")
         return "".join(self.asListOfLineStrings())
 
     def numbersTuple(self):
         return self.start_line_num, self.start_line_start_ind, self.stop_line_num, self.stop_line_stop_ind
 
     def __repr__(self):
-        return "Paragraph({},{},{},{},{})".format(self.lines, self.start_line_num, self.start_line_start_ind,
+        return "Chunk({},{},{},{},{})".format(self.lines, self.start_line_num, self.start_line_start_ind,
                                                   self.stop_line_num, self.stop_line_stop_ind)
 
-class OpenParagraph(Paragraph):
+class OpenChunk(Chunk):
     def __init__(self,
                  lines,
                  start_line_num,
                  start_line_start_ind):
-        Paragraph.__init__(self, lines, start_line_num, start_line_start_ind, None, None)
+        Chunk.__init__(self, lines, start_line_num, start_line_start_ind, None, None)
 
 def find_next_toplevel_in_str(s, start, char_to_find):
     # print(start)
     # print(s[start:start+300])
-    par = OpenParagraph([s], 0, start)
+    par = OpenChunk([s], 0, start)
     res = find_next_toplevel(par, char_to_find)
     if not res:
         return res
@@ -210,9 +210,9 @@ def find_next_toplevel_in_str(s, start, char_to_find):
 
 def find_next_toplevel(par, char_to_find):
     r"""
-    @:param par : Paragraph
+    @:param par : Chunk
     @:param char_to_find : character
-    @returns None if none found, or else a Paragraph with
+    @returns None if none found, or else a Chunk with
     lines = par.lines
     start_line_num = par.start_line_num
     start_line_ind = par.start_line_ind
@@ -220,18 +220,18 @@ def find_next_toplevel(par, char_to_find):
     stop_line_stop_ind = index in stop_line_num of the top-level char_to_find
 
     >>> aline = ['functioncall(0,1,2)\n']
-    >>> find_next_toplevel(OpenParagraph(aline, 0, 13), ')')
-    Paragraph(['functioncall(0,1,2)\n'],0,13,0,18)
-    >>> [find_next_toplevel(OpenParagraph(aline, 0, 12), ')')]
+    >>> find_next_toplevel(OpenChunk(aline, 0, 13), ')')
+    Chunk(['functioncall(0,1,2)\n'],0,13,0,18)
+    >>> [find_next_toplevel(OpenChunk(aline, 0, 12), ')')]
     [None]
 
     >>> lines = ['line 1\n', '\n', 'line 2(\n', 'a, b, \n', 'c\n', ')\n', 'a\n']
-    >>> find_next_toplevel(OpenParagraph(lines, 0, 0), 'a')
-    Paragraph(['line 1\n', '\n', 'line 2(\n', 'a, b, \n', 'c\n', ')\n', 'a\n'],0,0,6,0)
+    >>> find_next_toplevel(OpenChunk(lines, 0, 0), 'a')
+    Chunk(['line 1\n', '\n', 'line 2(\n', 'a, b, \n', 'c\n', ')\n', 'a\n'],0,0,6,0)
     >>> lines2 = [ '"Problem with prop " + p + ", allowed_flatprops(p) is " + allowed_flatprops[p] + ", nodetype is " + node.nodetype']
-    >>> find_next_toplevel(OpenParagraph(lines2, 0, 0), ',')
+    >>> find_next_toplevel(OpenChunk(lines2, 0, 0), ',')
     """
-    rv = Paragraph(par.lines, par.start_line_num, par.start_line_start_ind, None, None)
+    rv = Chunk(par.lines, par.start_line_num, par.start_line_start_ind, None, None)
 
     line_ind = par.start_line_start_ind
 
@@ -339,28 +339,28 @@ def find_next_toplevel(par, char_to_find):
 
 def split_by_top_level_commas(bigger_par):
     """
-    Takes a CLOSED paragraph @bigger_par of a valid function call,
+    Takes a CLOSED chunk @bigger_par of a valid function call,
     NO -> optionally beginning and ending with the opening '(' and closing ')'
-    Returns a list of paragraphs for the individual arguments, each of which may span multiple lines.
+    Returns a list of chunks for the individual arguments, each of which may span multiple lines.
     """
     r"""
     >>> lines = ["debugtest(this.node_class_names.forEach(function (nodetype) {\n", "	dassert(_this.strict_subtype_reln.has(nodetype), nodetype);\n", "	dassert(_this.strict_supertype_reln.has(nodetype), nodetype);\n", "}));"]
-    >>> par = Paragraph(lines, 0, 10, 3, 1)
+    >>> par = Chunk(lines, 0, 10, 3, 1)
     >>> rv = split_by_top_level_commas(par)
     >>> map( lambda x: x.numbersTuple(), rv)
     [(0, 10, 3, 1)]
     >>> lines2 = ["fn(10 , 20,\n", "30,\n", "40,50\n", "   )\n"]
-    >>> par2 = Paragraph(lines2, 0, 3, 3, 2)
+    >>> par2 = Chunk(lines2, 0, 3, 3, 2)
     >>> rv2 = split_by_top_level_commas(par2)
     >>> map( lambda x: x.numbersTuple(), rv2)
     [(0, 3, 0, 5), (0, 7, 0, 9), (0, 11, 1, 1), (1, 3, 2, 1), (2, 3, 3, 2)]
     >>> lines3 = ["debugtest(this.node_class_names.forEach(function (nodetype) {\n","                dassert(_this.strict_subtype_reln.has(nodetype), nodetype);\n","                dassert(_this.strict_supertype_reln.has(nodetype), nodetype);\n","            }));\n"]
-    >>> par3 = Paragraph(lines3, 0, 10, 3, 13)
+    >>> par3 = Chunk(lines3, 0, 10, 3, 13)
     >>> rv3 = split_by_top_level_commas(par3)
     >>> map( lambda x: x.numbersTuple(), rv3)
     [(0, 10, 3, 13)]
     >>> line = ['dassert(allowed_flatprops[p] === StringPropType.immutstring || allowed_flatprops[p] === StringPropType.stringselect, "Problem with prop " + p + ", allowed_flatprops(p) is " + allowed_flatprops[p] + ", nodetype is " + node.nodetype);' ]
-    >>> par4 = Paragraph(line, 0, 9, 0, 212)
+    >>> par4 = Chunk(line, 0, 9, 0, 212)
     >>> rv4 = split_by_top_level_commas(par4)
     >>> map( lambda x: x.numbersTuple(), rv4)
     3
@@ -371,7 +371,7 @@ def split_by_top_level_commas(bigger_par):
 
     # idea: use find_next_toplevel repeatedly until end of par
     arg_pars = []
-    remaining_args_par = Paragraph(
+    remaining_args_par = Chunk(
         bigger_par.lines,
         bigger_par.start_line_num,
         bigger_par.start_line_start_ind,
@@ -433,7 +433,7 @@ def for_each_macro_def(macro_defs_file_path, f):
         if match:
             fnname, params_str, opt_returntype = match.groups()
 
-            body_par = find_next_toplevel(OpenParagraph(macro_defs_file_lines, i + 1, 0), "}")
+            body_par = find_next_toplevel(OpenChunk(macro_defs_file_lines, i + 1, 0), "}")
 
             # remove any single-line comments, and exclude the line containing the final }
             body_lines = filter(lambda x: not x.strip().startswith("//"),
