@@ -1,12 +1,10 @@
 import time, re
-from typing import *
-from typing import Callable, List
+from typing import Callable, List, Dict, Union
 
 from constants import DEB_PRINT_ON, ST_ROOT
 # from constants import VERBOSE_DEFAULT
 from constants import FIRST_LINE_OF_MULTILINE_MACRO_DEF_RE
 from constants import NON_WORD_CHAR, SINGLELINE_MACRO_DEF_RE
-
 
 
 brackets_open_to_closed = {'(':')', '[':']', '{':'}'}
@@ -18,12 +16,6 @@ def path_to_filename(path_to_js_needing_processing):
 def debprint(*args):
     if DEB_PRINT_ON:
         print(args)
-
-# def some(lst):
-#     for x in lst:
-#         if x:
-#             return True
-#     return False
 
 def perfcounter():
     # pydocs say this is preferred if you're using python 3.x:
@@ -37,6 +29,8 @@ def couldBeToken(start:int, stop:int, text:str) -> bool:
     Return true iff
         start == 0 or text[start-1] is a non-word character, and
         stop == len(text)-1 or text[stop+1] is a non-word character
+
+    This should be equivalent to some search using re.search("\b\w+\b" ...
     """
     if start == 0 or re.search(NON_WORD_CHAR, text[start-1]):
         return stop == len(text) - 1 or re.search(NON_WORD_CHAR, text[stop+1])
@@ -44,7 +38,7 @@ def couldBeToken(start:int, stop:int, text:str) -> bool:
         return False
 
 
-def updateInStrLit(in_str_lit:dict[str,bool], i:int, text:str) -> None:
+def updateInStrLit(in_str_lit:Dict[str,bool], i:int, text:str) -> None:
     """
     :param in_str_lit: dict {"'":boolean, '"':boolean, '`':boolean} that is all false if i == 0, and otherwise
      tells whether text[i-1] is within a string literal of the corresponding type.
@@ -67,10 +61,10 @@ def updateInStrLit(in_str_lit:dict[str,bool], i:int, text:str) -> None:
         if text[min(i - 1, 0)] != "\\" and not in_str_lit["'"] and not in_str_lit['"']:
             in_str_lit['`'] = not in_str_lit['`']
 
-def inStrLiteral(in_str_lit:dict[str,bool]) -> bool:
+def inStrLiteral(in_str_lit:Dict[str,bool]) -> bool:
     return in_str_lit['"'] or in_str_lit["'"] or in_str_lit["`"]
 
-def updateOpenBracketCnts(open_bracket_cnt:dict[str,int], i:int, text:str) -> None:
+def updateOpenBracketCnts(open_bracket_cnt:Dict[str,int], i:int, text:str) -> None:
     """
     PRE: text[i] is not within a string literal
     :param open_bracket_cnt:
@@ -91,10 +85,10 @@ def updateOpenBracketCnts(open_bracket_cnt:dict[str,int], i:int, text:str) -> No
     elif a == "]":
         open_bracket_cnt["["] -= 1
 
-def bracketsBalanced(open_bracket_cnt:dict[str,int]) -> bool:
+def bracketsBalanced(open_bracket_cnt:Dict[str,int]) -> bool:
     return open_bracket_cnt["("] == open_bracket_cnt["{"] == open_bracket_cnt["["] == 0
 
-def unmatchedCloseBracket(open_bracket_cnt:dict[str,int]) -> bool:
+def unmatchedCloseBracket(open_bracket_cnt:Dict[str,int]) -> bool:
     return open_bracket_cnt["("] < 0 or open_bracket_cnt["{"] < 0 or open_bracket_cnt["["] < 0
 
 def escapeQuotes(x):
@@ -357,7 +351,7 @@ def split_by_top_level_commas(bigger_chunk:ClosedChunk) -> List[ClosedChunk]:
 
 
 
-def for_each_macro_def(macro_defs_file_path:str, f:Callable[[string,string,string],None]):
+def for_each_macro_def(macro_defs_file_path:str, f:Callable[[str,str,str],None]):
     """
     f is a function that takes a tripple (fnname: string, params_str: string, body_as_single_line: string) and returns nothing.
     It will be called on each such tripple parsed from the file at path macro_defs_file_path.

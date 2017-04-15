@@ -2,67 +2,24 @@
 
 import sys, datetime, time, re
 from string import Formatter
+from typing import List, Dict
 
 from common import *
 from WarningMsg import WarningMsg
 
 from constants import VERBOSE_DEFAULT, ST_ROOT
 from constants import HAS_BEEN_PROCESSED_MARKER__DEV, INSERT_CONSOLE_LOG_OF_BUILD_TIME
-from constants import END_BLOCK_COMMENT_RE, NON_WORD_CHAR_OR_START_OF_STRING, RE_FOR_STUFF_BEFORE_MACRO_NAME
+from constants import END_BLOCK_COMMENT_RE, RE_FOR_STUFF_BEFORE_MACRO_NAME
 
 from macro_defn_datastructures import MacroDefn
 
 def parse_macro_defs_file_to_substitution_objects( macro_defs_file_path, verbose = VERBOSE_DEFAULT ):
-    def parse_typed_param(x):
-        if "=" in x:
-            raise Exception("Looks like you're using a default argument in a macro definition. Those are not supported.")
-
-        rv = x.split(":")[0].strip()
-        if rv[-1] == "?":
-            rv = rv[:-1]  # remove the "?"
-        elif "?" in rv:
-            raise Exception("Found ? in unexpected place, not at the end of the parameter name.")
-
-        if rv.startswith("..."):
-            rv = rv[3:] # remove the "..."
-
-        return rv
-
     macros = {}
 
-    def handle_single_macro_def2(fnname, params_str, body_as_single_line):
+    def handle_single_macro_def(fnname, params_str, body_as_single_line):
         macros[fnname] = MacroDefn(fnname, params_str, body_as_single_line)
 
-    def handle_single_macro_def(fnname, params_str, body_as_single_line):
-        possibly_typed_params_list_chunks = split_by_top_level_commas(Chunk.fromSingleLine(params_str))
-        possibly_typed_params_list = list(map(lambda x: x.asSingleLine(), possibly_typed_params_list_chunks))
-
-        has_rest_param = len(possibly_typed_params_list) > 0 and "..." in possibly_typed_params_list[-1]
-        num_optional_params = sum( map( lambda x: 1 if ("?" in x) else 0, possibly_typed_params_list ) )
-        vars_only_params_list = list(map(parse_typed_param, possibly_typed_params_list))
-
-        # Next line is necessary so that existing curly braces don't interfere with Python's Formatter.vformat
-        # This double-up-to-escape is specified by Formatter.vformat.
-        body_as_single_line = body_as_single_line.replace("{", "{{").replace("}", "}}")
-
-        for p in vars_only_params_list:
-            # but this version doesn't match at the beginning of the line :-(
-            # body = re.sub(NON_WORD_CHAR_OR_START_OF_STRING + p, lambda x: ("" if len(x.group(0)) == 0 else x.group(0)[0]) + "{" + x.group(0)[1:] + "}", body)
-            # and this version fails for I don't know why
-            # body = re.sub("(?:^|" + NON_WORD_CHAR_OR_START_OF_STRING + ")" + p, lambda x: ("" if len(x.group(0)) == 0 else x.group(0)[0]) + "{" + x.group(0)[1:] + "}", body)
-            # old version, which can do replacements in the middle of words:
-            body_as_single_line = body_as_single_line.replace(p, "{" + p + "}")
-
-        for p in vars_only_params_list:
-            # in previous for-loop, we might have created occurrences of svar({p}), which should actually be occurrences of {svar(p)}.
-            body_as_single_line = body_as_single_line.replace(svar("{" + p + "}"), "{" + svar(p) + "}")
-
-        if verbose:
-            print("\n" + fnname + "( " + params_str + " ) { " + body_as_single_line + " }")
-
-        macros[fnname] = (list(vars_only_params_list), body_as_single_line, has_rest_param, num_optional_params)
-
-    for_each_macro_def( macro_defs_file_path, handle_single_macro_def2 )
+    for_each_macro_def( macro_defs_file_path, handle_single_macro_def )
     return macros
 
 
