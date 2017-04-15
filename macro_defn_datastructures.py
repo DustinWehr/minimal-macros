@@ -59,8 +59,8 @@ class MacroDefn:
                 if body_str[i] == "`" and self._pos_is_in_str_literal[i]:
                     WarningMsg("You've used a backquote in a macro definition. As of now, this probably means your code will only run in a js interpreter that supports template strings (es6).")
 
-        possibly_typed_params_list_pars = split_by_top_level_commas(Chunk.fromSingleLine(params_str))
-        possibly_typed_params_list = list(map(lambda x: x.asSingleLine(), possibly_typed_params_list_pars))
+        possibly_typed_params_list_chunks = split_by_top_level_commas(Chunk.fromSingleLine(params_str))
+        possibly_typed_params_list = list(map(lambda x: x.asSingleLine(), possibly_typed_params_list_chunks))
 
         self._numRestParams = 1 if len(possibly_typed_params_list) > 0 and "..." in possibly_typed_params_list[-1] else 0
         self._numOptionalParams = sum( map( lambda x: 1 if ("?" in x) else 0, possibly_typed_params_list ) )

@@ -34,8 +34,8 @@ def parse_macro_defs_file_to_substitution_objects( macro_defs_file_path, verbose
         macros[fnname] = MacroDefn(fnname, params_str, body_as_single_line)
 
     def handle_single_macro_def(fnname, params_str, body_as_single_line):
-        possibly_typed_params_list_pars = split_by_top_level_commas(Chunk.fromSingleLine(params_str))
-        possibly_typed_params_list = list(map(lambda x: x.asSingleLine(), possibly_typed_params_list_pars))
+        possibly_typed_params_list_chunks = split_by_top_level_commas(Chunk.fromSingleLine(params_str))
+        possibly_typed_params_list = list(map(lambda x: x.asSingleLine(), possibly_typed_params_list_chunks))
 
         has_rest_param = len(possibly_typed_params_list) > 0 and "..." in possibly_typed_params_list[-1]
         num_optional_params = sum( map( lambda x: 1 if ("?" in x) else 0, possibly_typed_params_list ) )
@@ -87,7 +87,7 @@ def run_macro_expansion(path_to_macro_defs, path_to_js_needing_processing, outfi
     # print("[MCM] Read {} js lines.".format(len(lines)))
     # print("[MCM] File: " + path_to_filename(path_to_js_needing_processing) + "; read {} js lines in {} ms.".format(len(lines), round(1000*(perfcounter() - starttime))))
 
-    # re that looks for //, /*, or a macro name on a single line
+    # re that looks for //, /*, a macro name, or "function" on a single line
     def make_main_expansion_re( macronames ):
         macronames_with_paren = list(map(lambda x: x + r"\(", macronames))
         macroapp = "(" + "|".join(macronames_with_paren) + ")"
@@ -142,9 +142,9 @@ def run_macro_expansion(path_to_macro_defs, path_to_js_needing_processing, outfi
                     in_multiline_comment = False
                     continue # redundant
                 else:
-                    line_ind = output_unchanged(line[line_ind:])
-                    line_ind = 0
                     line_num += 1
+                    output_unchanged(line[line_ind:])
+                    line_ind = 0
                     break
             else:
                 if line_ind > 0:
@@ -153,31 +153,23 @@ def run_macro_expansion(path_to_macro_defs, path_to_js_needing_processing, outfi
                     match = main_re.search(line)
                 # line[line_ind:] is the remainder of the line
                 if not match:
-                    line_ind = output_unchanged(line[line_ind:])
-                    line_ind = 0
                     line_num += 1
+                    line_ind = output_unchanged(line[line_ind:])
                     break
                 elif match.group(0) == "//":  # // found
-                    line_ind = output_unchanged(line[line_ind:])
-                    line_ind = 0
                     line_num += 1
+                    output_unchanged(line[line_ind:])
+                    line_ind = 0
                     break
                 elif match.group(0) == "/*": # /* found
                     # print("{} - start block comment. line_ind: {}. match.start()+1: {}. match.end()+1: {}, match.start(0)+1: {}. line[:-1]:\n{}\nmatch.group(0):\n{}".format(line_num+1,line_ind+1, match.start()+1, match.end()+1, match.start(0)+1, line[:-1], match.group(0)))
                     in_multiline_comment = True
-                    # todo: can't skip to next line, since comment might end on same line. need to continue processing
-                    # print(line[match.start(0):match.end(0)])
                     line_ind = output_unchanged(line[line_ind: match.end(0)])
-                    # print("new line_ind:", line_ind)
-                    # line_ind = output_unchanged(line[line_ind:])
-                    # line_ind = 0
-                    # line_num += 1
                     continue
                 elif (line.strip().startswith("function")) or ("function " in match.group(0)):  # it's a function definition, perhaps of one of the macros, so skip this line
-                    x = line[line_ind:]
-                    line_ind = output_unchanged(line[line_ind:])
-                    line_ind = 0
+                    output_unchanged(line[line_ind:])
                     line_num += 1
+                    line_ind = 0
                     break
                 else: # macro name found
                     start_match_line_ind = match.start()
@@ -194,10 +186,10 @@ def run_macro_expansion(path_to_macro_defs, path_to_js_needing_processing, outfi
 
                     args_chunk.stop_line_stop_ind -= 1  # now last char is the char before the ')'
 
-                    list_of_arg_pars = split_by_top_level_commas(args_chunk)
+                    list_of_arg_chunks = split_by_top_level_commas(args_chunk)
 
                     # OPT: don't need to form this list (really?)
-                    args_list = list(map(lambda x: x.asSingleLine(), list_of_arg_pars))
+                    args_list = list(map(lambda x: x.asSingleLine(), list_of_arg_chunks))
 
                     replacement_text = macros[macroname].simult_subst(args_list)
 
@@ -226,13 +218,9 @@ def run_macro_expansion(path_to_macro_defs, path_to_js_needing_processing, outfi
     for line in lines[last_line_num_to_process + 1: len(lines)]:
         outfile.write(line)
 
-    # print("[MCM] {}: Replaced js file with macro-expanded code, {} expansions, {} milliseconds\n".format(curtime, num_matches, round(1000*(time.perf_counter() - starttime2))))
-
     outfile.close()
 
     print("[MCM] {time} ms, replaced js file with macro-expanded code, {num} expansions\n".format(time=round(1000*(perfcounter() - starttime)), num=num_matches))
-
-
 
 
 # e.g. if arg1 is a param that, in a macro occurrence, gets set to the value (in python) "x != 'a'",
@@ -245,28 +233,10 @@ def svar(x):
 if __name__ == '__main__':
     # NOTE: the last argument is always "1" for some reason to do with fswatch and xargs, and means nothing, so it will be ignored.
     # Also note: sys.argv[0] is the entire string of arguments
-    # those two notes are why we subtract 2
-    # print(sys.argv)
-    # print(len(sys.argv))
-    # assert 3 <= len(sys.argv) - 2 <= 4, "[MCM] 3 or 4 arguments are required for command-line invocation of expand_macros.py, but " + str(len(sys.argv) - 2) + " were given."
+    # those two notes are why there's a descrepency between the length of sys.argv and the args used
     if len(sys.argv) == 5:
         run_macro_expansion(sys.argv[1], sys.argv[2], sys.argv[3])
     elif len(sys.argv) == 6:
         run_macro_expansion(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
 
 
-
-
-# old
-# def getBodyAndLastLineNumberOfMacroBody(index_of_first_line_of_macro_def_body, file_ind):
-#       # NTS file_ind is 1 too small
-#       line_endings_passed, file_pos_of_end_curly = find_next_toplevel(macro_defs_file_lines, index_of_first_line_of_macro_def_body, file_ind, "}")
-
-#       macro_line_num_end = index_of_first_line_of_macro_def_body + line_endings_passed
-
-#       debprint(macro_line_num_end + 1, " should be 1-based line number of end of a macro defn.")
-
-#       body = macro_defs_file_str[file_ind: file_pos_of_end_curly]
-
-#       debprint("char at file_pos_end + 1 is '{}'".format(macro_defs_file_str[file_pos_of_end_curly]))
-#       return macro_line_num_end + 1, body, file_pos_of_end_curly + 1

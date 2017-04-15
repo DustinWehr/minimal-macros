@@ -1,5 +1,6 @@
 import time, re
 from typing import *
+from typing import Callable, List
 
 from constants import DEB_PRINT_ON, ST_ROOT
 # from constants import VERBOSE_DEFAULT
@@ -161,6 +162,16 @@ class Chunk(object):
         return "Chunk({},{},{},{},{})".format(self.lines, self.start_line_num, self.start_line_start_ind,
                                                   self.stop_line_num, self.stop_line_stop_ind)
 
+class ClosedChunk(Chunk):
+    def __init__(self,
+                 lines,
+                 start_line_num,
+                 start_line_start_ind,
+                 stop_line_num:int,
+                 stop_line_stop_ind:int):
+        assert(stop_line_num is not None and stop_line_stop_ind is not None)
+        Chunk.__init__(self, lines, start_line_num, start_line_start_ind, None, None)
+
 class OpenChunk(Chunk):
     def __init__(self,
                  lines,
@@ -168,7 +179,7 @@ class OpenChunk(Chunk):
                  start_line_start_ind):
         Chunk.__init__(self, lines, start_line_num, start_line_start_ind, None, None)
 
-def find_next_toplevel_in_str(s:str, start:ind, char_to_find:str) -> int:
+def find_next_toplevel_in_str(s:str, start:int, char_to_find:str) -> int:
     chunk = OpenChunk([s], 0, start)
     res = find_next_toplevel(chunk, char_to_find)
     if not res:
@@ -176,11 +187,11 @@ def find_next_toplevel_in_str(s:str, start:ind, char_to_find:str) -> int:
     return res.stop_line_stop_ind
 
 
-def find_next_toplevel(chunk, char_to_find) -> Union[Chunk,None]:
-    r"""
+def find_next_toplevel(chunk:Chunk, char_to_find:str) -> Union[ClosedChunk,None]:
+    """
     @:param chunk : Chunk
     @:param char_to_find : character
-    @returns None if none found, or else a Chunk with
+    @returns None if none found, or else a ClosedChunk with
     lines = chunk.lines
     start_line_num = chunk.start_line_num
     start_line_ind = chunk.start_line_ind
@@ -291,14 +302,11 @@ def find_next_toplevel(chunk, char_to_find) -> Union[Chunk,None]:
 
 
 
-
-
-
-def split_by_top_level_commas(bigger_chunk):
+def split_by_top_level_commas(bigger_chunk:ClosedChunk) -> List[ClosedChunk]:
     """
     Takes a CLOSED chunk @bigger_chunk of a valid function call in some source text,
     NO -> optionally beginning and ending with the opening '(' and closing ')'
-    Returns a list of chunks for the individual arguments, each of which may span multiple lines.
+    Returns a list of closed chunks for the individual arguments, each of which may span multiple lines.
     """
     r"""
     >>> lines = ["debugtest(this.node_class_names.forEach(function (nodetype) {\n", "	dassert(_this.strict_subtype_reln.has(nodetype), nodetype);\n", "	dassert(_this.strict_supertype_reln.has(nodetype), nodetype);\n", "}));"]
@@ -307,8 +315,8 @@ def split_by_top_level_commas(bigger_chunk):
     >>> map( lambda x: x.numbersTuple(), rv)
     [(0, 10, 3, 1)]
     >>> lines2 = ["fn(10 , 20,\n", "30,\n", "40,50\n", "   )\n"]
-    >>> par2 = Chunk(lines2, 0, 3, 3, 2)
-    >>> rv2 = split_by_top_level_commas(par2)
+    >>> chunk2 = Chunk(lines2, 0, 3, 3, 2)
+    >>> rv2 = split_by_top_level_commas(chunk2)
     >>> map( lambda x: x.numbersTuple(), rv2)
     [(0, 3, 0, 5), (0, 7, 0, 9), (0, 11, 1, 1), (1, 3, 2, 1), (2, 3, 3, 2)]
     >>> lines3 = ["debugtest(this.node_class_names.forEach(function (nodetype) {\n","                dassert(_this.strict_subtype_reln.has(nodetype), nodetype);\n","                dassert(_this.strict_supertype_reln.has(nodetype), nodetype);\n","            }));\n"]
@@ -324,7 +332,7 @@ def split_by_top_level_commas(bigger_chunk):
     """
 
     # idea: use find_next_toplevel repeatedly until end of chunk
-    arg_pars = []
+    arg_chunks = []
     remaining_args_chunk = Chunk(
         bigger_chunk.lines,
         bigger_chunk.start_line_num,
@@ -340,16 +348,16 @@ def split_by_top_level_commas(bigger_chunk):
             remaining_args_chunk.start_line_num = next_arg_chunk.stop_line_num
             remaining_args_chunk.start_line_start_ind = next_arg_chunk.stop_line_stop_ind + 1  # start just after the ','
             next_arg_chunk.delete_last_char() #  adjust to not include the ','
-            arg_pars.append(next_arg_chunk)
+            arg_chunks.append(next_arg_chunk)
         else:
             # then we're done, which means the final arg is just remaining_args_chunk
-            arg_pars.append(remaining_args_chunk)
+            arg_chunks.append(remaining_args_chunk)
             break
-    return arg_pars
+    return arg_chunks
 
 
 
-def for_each_macro_def(macro_defs_file_path, f):
+def for_each_macro_def(macro_defs_file_path:str, f:Callable[[string,string,string],None]):
     """
     f is a function that takes a tripple (fnname: string, params_str: string, body_as_single_line: string) and returns nothing.
     It will be called on each such tripple parsed from the file at path macro_defs_file_path.
@@ -423,7 +431,7 @@ def for_each_macro_def(macro_defs_file_path, f):
 
 
 
-def maybe_readlines_and_maybe_modify_first(path, has_been_processed_marker, ignore_HAS_BEEN_PROCESSED_MARKER, key):
+def maybe_readlines_and_maybe_modify_first(path:str, has_been_processed_marker:str, ignore_HAS_BEEN_PROCESSED_MARKER:bool, key:str):
     # print("in maybe_readlines_and_maybe_modify_first")
     f = open(path, "r")
     firstline = f.readline()
@@ -442,7 +450,7 @@ def maybe_readlines_and_maybe_modify_first(path, has_been_processed_marker, igno
     f.close()
     return lines
 
-def maybe_readfile_as_string_and_insert_marker(path, has_been_processed_marker, ignore_HAS_BEEN_PROCESSED_MARKER, key):
+def maybe_readfile_as_string_and_insert_marker(path:str, has_been_processed_marker:str, ignore_HAS_BEEN_PROCESSED_MARKER:bool, key:str):
     # print("in maybe_readfile_as_string_and_insert_marker")
     f = open(path, "r")
     filestr = f.read()
@@ -459,7 +467,7 @@ def maybe_readfile_as_string_and_insert_marker(path, has_been_processed_marker, 
 
     return filestr
 
-def find_spot_for_console_msg(lines: List[str]):
+def find_spot_for_console_msg(lines: List[str]) -> int:
     """
     look backwards through lines to find index k of the file's last line that doesn't start with //
     # return k
