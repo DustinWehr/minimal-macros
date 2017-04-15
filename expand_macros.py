@@ -111,7 +111,8 @@ def run_macro_expansion(path_to_macro_defs, path_to_js_needing_processing, outfi
                 # line[line_ind:] is the remainder of the line
                 if not match:
                     line_num += 1
-                    line_ind = output_unchanged(line[line_ind:])
+                    output_unchanged(line[line_ind:])
+                    line_ind = 0
                     break
                 elif match.group(0) == "//":  # // found
                     line_num += 1
