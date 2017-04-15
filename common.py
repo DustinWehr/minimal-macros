@@ -164,7 +164,7 @@ class ClosedChunk(Chunk):
                  stop_line_num:int,
                  stop_line_stop_ind:int):
         assert(stop_line_num is not None and stop_line_stop_ind is not None)
-        Chunk.__init__(self, lines, start_line_num, start_line_start_ind, None, None)
+        Chunk.__init__(self, lines, start_line_num, start_line_start_ind, stop_line_num, stop_line_stop_ind)
 
 class OpenChunk(Chunk):
     def __init__(self,
