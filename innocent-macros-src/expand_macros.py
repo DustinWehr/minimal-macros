@@ -1,4 +1,3 @@
-#! /usr/bin/env python
 import sys, datetime, time, re, os
 from string import Formatter
 from typing import List, Dict
@@ -60,7 +59,7 @@ def run_macro_expansion(path_to_macro_defs, path_to_js_needing_processing, outfi
     main_re = make_main_expansion_re(macronames)
 
     # It is insignificant (which I should've known):
-    # print("[MCM] {} ms processing macro defs".format(round(1000*(perfcounter() - starttime))))
+    # print("[IM] {} ms processing macro defs".format(round(1000*(perfcounter() - starttime))))
 
     # NTS: I gave it a a good try at making "for line in file" work with inserting console log.
     # Not worth trying any more. See ABOUT PERFORMANCE.txt
@@ -168,7 +167,7 @@ def run_macro_expansion(path_to_macro_defs, path_to_js_needing_processing, outfi
 
     outfile.close()
 
-    print("[MCM] {time} ms, replaced js file with macro-expanded code, {num} expansions\n".format(time=round(1000*(perfcounter() - starttime)), num=num_matches))
+    print("[IM] {time} ms, replaced js file with macro-expanded code, {num} expansions\n".format(time=round(1000*(perfcounter() - starttime)), num=num_matches))
 
 
 # e.g. if arg1 is a param that, in a macro occurrence, gets set to the value (in python) "x != 'a'",
@@ -176,15 +175,3 @@ def run_macro_expansion(path_to_macro_defs, path_to_js_needing_processing, outfi
 # "x != \'a\'".
 def svar(x):
     return "%" + x + "%"
-
-
-if __name__ == '__main__':
-    # NOTE: the last argument is always "1" for some reason to do with fswatch and xargs, and means nothing, so it will be ignored.
-    # Also note: sys.argv[0] is the entire string of arguments
-    # those two notes are why there's a descrepency between the length of sys.argv and the args used
-    if len(sys.argv) == 5:
-        run_macro_expansion(sys.argv[1], sys.argv[2], sys.argv[3])
-    elif len(sys.argv) == 6:
-        run_macro_expansion(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
-
-

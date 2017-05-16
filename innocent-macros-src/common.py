@@ -248,7 +248,7 @@ def find_next_toplevel(chunk:Chunk, char_to_find:str) -> Union[ClosedChunk,None]
 
 
             if unmatchedCloseBracket(bracket_cnts):
-                msg = "[MCM] There seems to be an unmatched close-paren/bracket in line {}[1-based], found while looking for the next '{}'.\n".format(
+                msg = "[IM] There seems to be an unmatched close-paren/bracket in line {}[1-based], found while looking for the next '{}'.\n".format(
                     line_num + 1, char_to_find)
 
                 for b in bracket_cnts.keys():
@@ -272,7 +272,7 @@ def find_next_toplevel(chunk:Chunk, char_to_find:str) -> Union[ClosedChunk,None]
     # next checks aren't necessary if macros file has been parsed by tsc:
     if not bracketsBalanced(bracket_cnts) or inStrLiteral(in_str_lit):
         print(repr(chunk))
-        msg = "[MCM] Unclosed paren/bracket or quote at line {} (1-based)?\n".format(line_num + 1)
+        msg = "[IM] Unclosed paren/bracket or quote at line {} (1-based)?\n".format(line_num + 1)
         for b in bracket_cnts.keys():
             if bracket_cnts[b] < 0:  msg += "Unclosed " + bracket_names[b] + "\n"
         for q in in_str_lit.keys():

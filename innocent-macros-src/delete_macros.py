@@ -1,4 +1,3 @@
-#! /usr/bin/env python3
 import sys, datetime, os
 
 from constants import HAS_BEEN_PROCESSED_MARKER__PRODUCTION, INSERT_CONSOLE_LOG_OF_BUILD_TIME
@@ -63,27 +62,11 @@ def run_macro_deletion(path_to_macro_defs,  path_to_js_needing_processing, outfi
 	curtime = datetime.datetime.now().strftime("%I:%M:%S")
 	if INSERT_CONSOLE_LOG_OF_BUILD_TIME:  
 		timestamp_print_command = "\nconsole.log('[{}] Build of {}');\n".format(filename, curtime);
-		# timestamp_print_command = "if(window.structure_together.dev_mode) { console.log('[MCM] Build of {}'); }\n".format(curtime);
+		# timestamp_print_command = "if(window.structure_together.dev_mode) { console.log('[IM] Build of {}'); }\n".format(curtime);
 		outfile.write(timestamp_print_command);
 	
 	outfile.close()
 
-	# print("[MCM] {}: deleted {} lines (replaced with blank lines), {} milliseconds\n".format(curtime, deleted_lines, round(1000*(perfcounter() - starttime))))
-	print("[MCM] {time} ms, deleted {num} macro occurrences ({chars})\n".format(time=round(1000*(perfcounter() - starttime)), num=deleted_macros, chars=deleted_chars))
-
-
-
-	
-
-if __name__ == '__main__':
-	# print(sys.argv)
-	assert 6 <= len(sys.argv) <= 7, "[MCM] 4 or 5 arguments are required to command-line invocation of delete_macros.py"
-	if len(sys.argv) == 6:
-		run_macro_deletion(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
-	elif len(sys.argv) == 7:  
-		run_macro_deletion(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
-
-
-
-
+	# print("[IM] {}: deleted {} lines (replaced with blank lines), {} milliseconds\n".format(curtime, deleted_lines, round(1000*(perfcounter() - starttime))))
+	print("\t[IM] {time} ms, deleted {num} macro occurrences ({chars})\n".format(time=round(1000*(perfcounter() - starttime)), num=deleted_macros, chars=deleted_chars))
 
