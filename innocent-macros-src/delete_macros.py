@@ -68,5 +68,5 @@ def run_macro_deletion(path_to_macro_defs,  path_to_js_needing_processing, outfi
 	outfile.close()
 
 	# print("[IM] {}: deleted {} lines (replaced with blank lines), {} milliseconds\n".format(curtime, deleted_lines, round(1000*(perfcounter() - starttime))))
-	print("\t[IM] {time} ms, deleted {num} macro occurrences ({chars})\n".format(time=round(1000*(perfcounter() - starttime)), num=deleted_macros, chars=deleted_chars))
+	print("\t[IM] Deleted {num} macro occurrences ({chars} chars), {time} ms".format(time=round(1000*(perfcounter() - starttime)), num=deleted_macros, chars=deleted_chars))
 

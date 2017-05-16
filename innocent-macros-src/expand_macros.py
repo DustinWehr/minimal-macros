@@ -167,7 +167,7 @@ def run_macro_expansion(path_to_macro_defs, path_to_js_needing_processing, outfi
 
     outfile.close()
 
-    print("[IM] {time} ms, replaced js file with macro-expanded code, {num} expansions\n".format(time=round(1000*(perfcounter() - starttime)), num=num_matches))
+    print("\t[IM] Replaced js file with macro-expanded code, {num} expansions, {time} ms".format(time=round(1000*(perfcounter() - starttime)), num=num_matches))
 
 
 # e.g. if arg1 is a param that, in a macro occurrence, gets set to the value (in python) "x != 'a'",
