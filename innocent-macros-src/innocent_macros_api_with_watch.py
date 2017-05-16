@@ -1,5 +1,3 @@
-#! /usr/bin/env python3
-
 import os, time
 from expand_macros import run_macro_expansion
 from delete_macros import run_macro_deletion
@@ -39,42 +37,55 @@ def expansion_call_once(macro_defs_path, src_path, use_dot_out, force, key):
 	
 def start_processing(config, args):
 	if "-h" in args or "--help" in args or "help" in args:
-		print("Usage:")
-		print("innocent_macros")	
+		print("[IM] Usage:")
+		print('"<your custom python main script name> [<build key>] <options>" - See the sample file innocent_macros_st.py and/or readme.md if you don\'t know what the first two parts are for.')		
+		print('"-d" or "--delete"')	
+		print('"-e" or "--expand"')	
+		print('"-w" or "--watch"')	
+		print('"-o" or "--overwrite" - Append overwrite the input file with the macro expanded/deleted file. Otherwise, will append ".out" to the output filename.')
+		print('"-f" or "--force" - Ignore modification time of files on first run of this process. On subsequent runs of this same process, modification times are never ignored (since otherwise would run over and over again).')
+		return
 
-	production_mode = "-p" in args or "--production" in args
-	dev_mode = "-d" in args or "--dev" in args
+	all_builds_delete_mode = "-d" in args or "--delete" in args
+	all_builds_expand_mode = '-e' in args or "--expand" in args
 	watch_mode = "-w" in args or "--watch" in args
-	
-	if not (dev_mode or production_mode):
-		print("\n[IM] No '-p' or '-d' arg given, so using defaults config only to determine which files to expand vs. remove macros in.")
-		fns = {k: (expansion_call_once if config['DEFAULT_MODES'][k] == '-d' else deletion_call_once) for k in config['DEFAULT_MODES'].keys()}
-	elif dev_mode:
-		fns = {k: expansion_call_once for k in config['DEFAULT_MODES'].keys()}
-	else: 
-		assert production_mode
-		fns = {k: deletion_call_once for k in config['DEFAULT_MODES'].keys()}
 
-	use_dot_out = ".out" in args
+	assert not (all_builds_delete_mode and all_builds_expand_mode)
 
-	force = "force" in args
+	if not (all_builds_expand_mode or all_builds_delete_mode):
+		print("\n[IM] No '-d' ('--delete') or '-e' ('--expand') arg given, so using your config object to determine which files to expand/delete macros in.")		
+		if not 'DEFAULT_ACTIONS' in config:
+			print("\n[IM] ...but your config object does contain a 'DEFAULT_ACTIONS' key, so can't do that. Exiting.")
+
+	use_dot_out = not ( "-o" in args or '--overwrite' in args)
+
+	force = "--force" in args
 	if force:
-		print("force used")
+		print("[IM] force used")
 
-	for key in config['PATHS_WITH_MACRO_OCCURRENCES_TO_PROCESS'].keys():
-		subprocesses[key] = 0
-
-
-	for key,path in config['PATHS_WITH_MACRO_OCCURRENCES_TO_PROCESS'].items():
-		print("\n[IM] Processing key " + key)
-		if production_mode or config['DEFAULT_MODES'][key] == '-p':
+	
+	for key,path in config['BUILDKEY_TO_ABSPATH_OF_FILE_WITH_MACRO_OCCURRENCES'].items():
+		print("\n[IM] Processing build key " + key)
+		if all_builds_delete_mode or (not all_builds_expand_mode and config['DEFAULT_ACTIONS'][key] == 'delete'):
 			deletion_call_once(config['TS_MACRO_DEFS_PATH'], path, use_dot_out, force, key)
 		else:
+			assert all_builds_expand_mode or (not all_builds_delete_mode and config['DEFAULT_ACTIONS'][key] == 'expand')
 			expansion_call_once(config['TS_MACRO_DEFS_PATH'], path, use_dot_out, force, key)
 
-	if watch_mode:
+	if watch_mode:		
+		if all_builds_expand_mode:
+			fns = {k: expansion_call_once for k in config['DEFAULT_ACTIONS'].keys()}
+		elif all_builds_delete_mode: 			
+			fns = {k: deletion_call_once for k in config['DEFAULT_ACTIONS'].keys()}
+		else:
+			fns = {k: expansion_call_once if config['DEFAULT_ACTIONS'][k] == 'expand' else 
+					 (deletion_call_once if config['DEFAULT_ACTIONS'] == 'delete' else None) for k in config['DEFAULT_ACTIONS'].keys()}
+
+		for key in config['BUILDKEY_TO_ABSPATH_OF_FILE_WITH_MACRO_OCCURRENCES'].keys():
+			subprocesses[key] = 0
+
 		print("\n[IM] Starting watch mode")
-		polling(config['TS_MACRO_DEFS_PATH'],config['PATHS_WITH_MACRO_OCCURRENCES_TO_PROCESS'], fns, use_dot_out, force)
+		polling(config['TS_MACRO_DEFS_PATH'],config['BUILDKEY_TO_ABSPATH_OF_FILE_WITH_MACRO_OCCURRENCES'], fns, use_dot_out, False)
 		
 # OUT-OF-DATE** DOCS:
 # Work flow:

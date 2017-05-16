@@ -400,7 +400,7 @@ def for_each_macro_def(macro_defs_file_path:str, f:Callable[[str,str,str],None])
 
                 print("\nFOUND NON-VOID NON-IDENTITY MACRO. body_str is\n" + body_str + "\n")
 
-            i = body_chunk.stop_line_num + 1
+            i = body_chunk.stop_line_num + 1 
 
             
             f(fnname, params_str, body_str)
@@ -411,7 +411,7 @@ def for_each_macro_def(macro_defs_file_path:str, f:Callable[[str,str,str],None])
             assert stripped == "" or stripped.startswith("//"), "\nThe line \n\t" + line + \
                                                                 "is not recognized as an empty line, a single-line comment, or as part of a macro definition.\n" + \
                                                                 "Nothing else is allowed (including /* */ comments).\n" + \
-                                                                "Note that the { following the parameters of a macro definition must be on the same line as \"function\"."
+                                                                "Note that the '{' following the parameters of a macro definition must be on the same line as \"function\"."
             i += 1
             continue
 
@@ -454,8 +454,8 @@ def maybe_readfile_as_string_and_insert_marker(path:str, has_been_processed_mark
 
 def find_spot_for_console_msg(lines: List[str]) -> int:
     """
-    look backwards through lines to find index k of the file's last line that doesn't start with //
-    # return k
+    Look backwards through lines to find index k of the file's last line that doesn't start with //
+    This is an attempt to not interfere with other tools that place a "hot comment" at the end of the file.
     """
     i = len(lines) - 1
 

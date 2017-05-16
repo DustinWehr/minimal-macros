@@ -59,6 +59,7 @@ def run_macro_expansion(path_to_macro_defs, path_to_js_needing_processing, outfi
     macronames = list(macros.keys())
     main_re = make_main_expansion_re(macronames)
 
+    # It is insignificant (which I should've known):
     # print("[MCM] {} ms processing macro defs".format(round(1000*(perfcounter() - starttime))))
 
     # NTS: I gave it a a good try at making "for line in file" work with inserting console log.
