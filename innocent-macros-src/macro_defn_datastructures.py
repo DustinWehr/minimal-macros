@@ -1,19 +1,11 @@
 import re
 from copy import copy
 
-from common import split_by_top_level_commas
-from common import Chunk, escapeQuotes
-from common import couldBeToken, inStrLiteral, updateInStrLit
-
 from constants import DEBUGGING
-
-
-
-
+from common import split_by_top_level_commas, Chunk, escapeQuotes, couldBeToken, inStrLiteral, updateInStrLit
 
 SVAR_LEFT = "%"
 SVAR_RIGHT = "%"
-
 
 
 # This code is intentionally not optimized, because (a) it only runs on small files, and (b) it only runs

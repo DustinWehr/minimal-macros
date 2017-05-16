@@ -1,26 +1,20 @@
 import time, re
 from typing import Callable, List, Dict, Union
 
-from constants import DEB_PRINT_ON, ST_ROOT
-# from constants import VERBOSE_DEFAULT
-from constants import FIRST_LINE_OF_MULTILINE_MACRO_DEF_RE
-from constants import NON_WORD_CHAR, SINGLELINE_MACRO_DEF_RE
-
+from constants import DEB_PRINT_ON, FIRST_LINE_OF_MULTILINE_MACRO_DEF_RE, NON_WORD_CHAR, SINGLELINE_MACRO_DEF_RE
 
 brackets_open_to_closed = {'(':')', '[':']', '{':'}'}
 bracket_names = {'(':'parenthesis', '[':'square bracket', '{':'curly bracket'}
 
-def path_to_filename(path_to_js_needing_processing):
-    return path_to_js_needing_processing[len(ST_ROOT + "/out/"):]
 
 def debprint(*args):
     if DEB_PRINT_ON:
         print(args)
 
-def perfcounter():
+def perfcounter():    
+    return time.clock()
     # pydocs say this is preferred if you're using python 3.x:
     # return time.perfcounter()
-    return time.clock()
 
 
 def couldBeToken(start:int, stop:int, text:str) -> bool:
@@ -420,9 +414,6 @@ def for_each_macro_def(macro_defs_file_path:str, f:Callable[[str,str,str],None])
                                                                 "Note that the { following the parameters of a macro definition must be on the same line as \"function\"."
             i += 1
             continue
-
-
-
 
 
 def maybe_readlines_and_maybe_modify_first(path:str, has_been_processed_marker:str, ignore_HAS_BEEN_PROCESSED_MARKER:bool, key:str):

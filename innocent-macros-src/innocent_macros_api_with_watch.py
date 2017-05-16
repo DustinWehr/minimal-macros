@@ -1,14 +1,8 @@
 #! /usr/bin/env python3
-# import subprocess, atexit
-# from subprocess import Popen, PIPE
-
 
 import os, time
 from expand_macros import run_macro_expansion
-# from delete_macros import run_macro_line_deletion
 from delete_macros import run_macro_deletion
-
-# disabled 2016/6/21 from constants import TS_IDENTITY_FNS_WITH_SIDE_EFFECTS_PATH,  
 
 subprocesses = dict()
 
@@ -44,14 +38,16 @@ def expansion_call_once(macro_defs_path, src_path, use_dot_out, force, key):
 	)
 	
 def start_processing(config, args):
+	if "-h" in args or "--help" in args or "help" in args:
+		print("Usage:")
+		print("innocent_macros")	
+
 	production_mode = "-p" in args or "--production" in args
 	dev_mode = "-d" in args or "--dev" in args
 	watch_mode = "-w" in args or "--watch" in args
-
-	# assert dev_mode or production_mode, "Must use -p (--production) or -d (--dev)"
+	
 	if not (dev_mode or production_mode):
 		print("\n[IM] No '-p' or '-d' arg given, so using defaults config only to determine which files to expand vs. remove macros in.")
-
 		fns = {k: (expansion_call_once if config['DEFAULT_MODES'][k] == '-d' else deletion_call_once) for k in config['DEFAULT_MODES'].keys()}
 	elif dev_mode:
 		fns = {k: expansion_call_once for k in config['DEFAULT_MODES'].keys()}
@@ -71,7 +67,6 @@ def start_processing(config, args):
 
 	for key,path in config['PATHS_WITH_MACRO_OCCURRENCES_TO_PROCESS'].items():
 		print("\n[IM] Processing key " + key)
-		# try:
 		if production_mode or config['DEFAULT_MODES'][key] == '-p':
 			deletion_call_once(config['TS_MACRO_DEFS_PATH'], path, use_dot_out, force, key)
 		else:
@@ -80,53 +75,7 @@ def start_processing(config, args):
 	if watch_mode:
 		print("\n[IM] Starting watch mode")
 		polling(config['TS_MACRO_DEFS_PATH'],config['PATHS_WITH_MACRO_OCCURRENCES_TO_PROCESS'], fns, use_dot_out, force)
-
-		# if production_mode or config['DEFAULT_MODES'][key] == '-p':
-		# 	print("[IM] Starting prod watch mode for " + path)
-			
-		# else:
-		# 	print("[IM] Starting dev watch mode for " + path)
-		# 	polling(config['TS_MACRO_DEFS_PATH'], config['PATHS_WITH_MACRO_OCCURRENCES_TO_PROCESS'], expansion_call_once, use_dot_out, force)
-					
-		# except Exception as e:
-			# print("File not found or other exception for: {}".format(path))
-			# print(e) 
 		
-	# if watch_mode:
-	# 	print("[MCM] Starting watch mode")
-	# 	polling(config['TS_MACRO_DEFS_PATH'],config['PATHS_WITH_MACRO_OCCURRENCES_TO_PROCESS'], 
-	# 		deletion_call_once, use_dot_out, force)
-
-
-	# if production_mode:
-	# 	print("\n[MCM] Production mode")	
-	# 	for path in config['PATHS_WITH_MACRO_OCCURRENCES_TO_PROCESS']:
-	# 		deletion_call_once(config['TS_MACRO_DEFS_PATH'], path, use_dot_out, force)
-		
-	# 	if watch_mode:
-	# 		print("[MCM] Starting watch mode")
-	# 		polling(config['TS_MACRO_DEFS_PATH'],config['PATHS_WITH_MACRO_OCCURRENCES_TO_PROCESS'], 
-	# 			deletion_call_once, use_dot_out, force)
-
-	# elif dev_mode:
-	# 	print("\n[MCM] Dev mode.")
-	# 	for path in config['PATHS_WITH_MACRO_OCCURRENCES_TO_PROCESS']:
-	# 		try:
-	# 			expansion_call_once(config['TS_MACRO_DEFS_PATH'], path, use_dot_out, force)
-	# 		except Exception as e:
-	# 			print("File not found at {}".format(path)) 
-
-	# 	if watch_mode:
-	# 		print("[MCM] Starting watch mode")
-	# 		polling(config['TS_MACRO_DEFS_PATH'], config['PATHS_WITH_MACRO_OCCURRENCES_TO_PROCESS'], 				
-	# 			expansion_call_once, use_dot_out, force)
-
-
-if __name__ == "__main__":
-    import sys
-    innocent_macros(int(sys.argv[1]))    
-
-
 # OUT-OF-DATE** DOCS:
 # Work flow:
 # This script with parameter "watch" starts a file watcher W for F1 = TS_MACRO_DEFS_PATH and F2 = SRC_WITH_MACRO_OCCURRENCES_TO_PROCESS

@@ -1,9 +1,9 @@
 #! /usr/bin/env python3
-import sys, datetime
-# from typing import *
-from common import *
+import sys, datetime, os
 
 from constants import HAS_BEEN_PROCESSED_MARKER__PRODUCTION, INSERT_CONSOLE_LOG_OF_BUILD_TIME
+from common import *
+
 
 def parse_macro_defs_file_to_macronames( macro_defs_file_path: str ) -> List[str]:
 	macro_names = []
@@ -13,7 +13,7 @@ def parse_macro_defs_file_to_macronames( macro_defs_file_path: str ) -> List[str
 	return macro_names
 
 def run_macro_deletion(path_to_macro_defs,  path_to_js_needing_processing, outfile_path, ignore_HAS_BEEN_PROCESSED_MARKER, key):
-	filename = path_to_filename(path_to_js_needing_processing)
+	filename = os.path.basename(path_to_js_needing_processing)
 	# print("File: " + filename)
 
 	starttime = perfcounter()

@@ -1,30 +1,9 @@
 import re
 
-# used by innocent_macros_main.py:
-# MACROS_PROJECT_ROOT = "/Users/dustin/Sites/LfP/StructureTogether/scripts/innocent-macros"
-# EXPANSION_SCRIPT_NAME = "expand_macros.py"
-# DELETION_SCRIPT_NAME = "delete_macros.py"
 
-ST_ROOT = "/Users/dustin/Sites/LfP/StructureTogether"
-
-TS_MACRO_DEFS_PATH = ST_ROOT + "/src/macros/dev-mode/dwmacros_multiline.ts"
-SRC_WITH_MACRO_OCCURRENCES_TO_PROCESS = ST_ROOT + "/out/structure-together-main.webpack-entry-chunk.js"
-
-# WITH_MACRO_OCCURRENCES_TO_PROCESS = [
-#     "/out/structure-together-main.webpack-entry-chunk.js",
-#     "/out/structure-together-core.webpack-entry-chunk.js",
-#     "/out/structure-together-test.webpack-entry-chunk.js",
-#     "/out/syncing-data.webpack-entry-chunk.js",
-#     "/out/util.webpack-entry-chunk.js",
-#     "/out/ifpd-language.webpack-entry-chunk.js"
-# ]
-
-# PATHS_WITH_MACRO_OCCURRENCES_TO_PROCESS = [ST_ROOT + x for x in WITH_MACRO_OCCURRENCES_TO_PROCESS]
-
-USING_EXTERNAL_MODULES = True
+USING_EXTERNAL_MODULES = True # this is a Typescript thing
 
 DEBUGGING = True
-
 
 # used by common.py
 DEB_PRINT_ON = True

@@ -1,16 +1,11 @@
 #! /usr/bin/env python
-
-import sys, datetime, time, re
+import sys, datetime, time, re, os
 from string import Formatter
 from typing import List, Dict
 
+from constants import VERBOSE_DEFAULT, HAS_BEEN_PROCESSED_MARKER__DEV, INSERT_CONSOLE_LOG_OF_BUILD_TIME, END_BLOCK_COMMENT_RE, RE_FOR_STUFF_BEFORE_MACRO_NAME
 from common import *
 from WarningMsg import WarningMsg
-
-from constants import VERBOSE_DEFAULT, ST_ROOT
-from constants import HAS_BEEN_PROCESSED_MARKER__DEV, INSERT_CONSOLE_LOG_OF_BUILD_TIME
-from constants import END_BLOCK_COMMENT_RE, RE_FOR_STUFF_BEFORE_MACRO_NAME
-
 from macro_defn_datastructures import MacroDefn
 
 def parse_macro_defs_file_to_substitution_objects( macro_defs_file_path, verbose = VERBOSE_DEFAULT ):
@@ -25,9 +20,6 @@ def parse_macro_defs_file_to_substitution_objects( macro_defs_file_path, verbose
 
 formatter = Formatter()
 
-def path_to_filename(path_to_js_needing_processing):
-    return path_to_js_needing_processing[len(ST_ROOT + "/out/"):]
-
 def run_macro_expansion(path_to_macro_defs, path_to_js_needing_processing, outfile_path, ignore_HAS_BEEN_PROCESSED_MARKER, key):
     starttime = perfcounter()
     
@@ -40,9 +32,6 @@ def run_macro_expansion(path_to_macro_defs, path_to_js_needing_processing, outfi
         key )
     if lines is None:
         return
-
-    # print("[MCM] Read {} js lines.".format(len(lines)))
-    # print("[MCM] File: " + path_to_filename(path_to_js_needing_processing) + "; read {} js lines in {} ms.".format(len(lines), round(1000*(perfcounter() - starttime))))
 
     # re that looks for //, /*, a macro name, or "function" on a single line
     def make_main_expansion_re( macronames ):
@@ -170,7 +159,7 @@ def run_macro_expansion(path_to_macro_defs, path_to_js_needing_processing, outfi
 
     curtime = datetime.datetime.now().strftime("%I:%M:%S")
     if INSERT_CONSOLE_LOG_OF_BUILD_TIME: #and ("structure-together-main" in path_to_js_needing_processing):
-        timestamp_print_command = "if(window.structure_together.dev_mode) {{ console.log('[{}] Build of {}'); }}\n".format(path_to_filename(path_to_js_needing_processing), curtime);
+        timestamp_print_command = "if(window.structure_together.dev_mode) {{ console.log('[{}] Build of {}'); }}\n".format(os.path.basename(path_to_js_needing_processing), curtime);
         outfile.write(timestamp_print_command);
 
     for line in lines[last_line_num_to_process + 1: len(lines)]:
