@@ -2,10 +2,18 @@ import sys, datetime, time, re, os
 from string import Formatter
 from typing import List, Dict
 
-from constants import VERBOSE_DEFAULT, HAS_BEEN_PROCESSED_MARKER__DEV, INSERT_CONSOLE_LOG_OF_BUILD_TIME, END_BLOCK_COMMENT_RE, RE_FOR_STUFF_BEFORE_MACRO_NAME
+from constants import VERBOSE_DEFAULT, INSERT_CONSOLE_LOG_OF_BUILD_TIME, END_BLOCK_COMMENT_RE, RE_FOR_STUFF_BEFORE_MACRO_NAME
 from common import *
 from WarningMsg import WarningMsg
 from macro_defn_datastructures import MacroDefn
+
+
+# e.g. if arg1 is a param that, in a macro occurrence, gets set to the value (in python) "x != 'a'",
+# then svar(arg1) is an implicit param that, in the same macro occurrence, gets set to the value (in python)
+# "x != \'a\'".
+def svar(x):
+    return "%" + x + "%"
+
 
 def parse_macro_defs_file_to_substitution_objects( macro_defs_file_path, verbose = VERBOSE_DEFAULT ):
     macros = {}
@@ -19,16 +27,12 @@ def parse_macro_defs_file_to_substitution_objects( macro_defs_file_path, verbose
 
 formatter = Formatter()
 
-def run_macro_expansion(path_to_macro_defs, path_to_js_needing_processing, outfile_path, ignore_HAS_BEEN_PROCESSED_MARKER, key):
+def run_macro_expansion(path_to_macro_defs, path_to_js_needing_processing, outfile_path, key):
     starttime = perfcounter()
     
     # Use readlines() instead of read() has very insignificant performance cost, at least on my SSD
     # It's also useful to have the lines.
-    lines = maybe_readlines_and_maybe_modify_first(
-        path_to_js_needing_processing,
-        HAS_BEEN_PROCESSED_MARKER__DEV,
-        ignore_HAS_BEEN_PROCESSED_MARKER,
-        key )
+    lines = readfile_as_lines(path_to_js_needing_processing)
     if lines is None:
         return
 
@@ -167,11 +171,5 @@ def run_macro_expansion(path_to_macro_defs, path_to_js_needing_processing, outfi
 
     outfile.close()
 
-    print("\t[IM] Replaced js file with macro-expanded code, {num} expansions, {time} ms".format(time=round(1000*(perfcounter() - starttime)), num=num_matches))
+    print("\t[IM] Expanded {num} macro occurrences, {time} ms".format(time=round(1000*(perfcounter() - starttime)), num=num_matches))
 
-
-# e.g. if arg1 is a param that, in a macro occurrence, gets set to the value (in python) "x != 'a'",
-# then svar(arg1) is an implicit param that, in the same macro occurrence, gets set to the value (in python)
-# "x != \'a\'".
-def svar(x):
-    return "%" + x + "%"

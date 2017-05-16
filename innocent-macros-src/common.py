@@ -416,40 +416,16 @@ def for_each_macro_def(macro_defs_file_path:str, f:Callable[[str,str,str],None])
             continue
 
 
-def maybe_readlines_and_maybe_modify_first(path:str, has_been_processed_marker:str, ignore_HAS_BEEN_PROCESSED_MARKER:bool, key:str):
-    # print("in maybe_readlines_and_maybe_modify_first")
+def readfile_as_lines(path:str):
     f = open(path, "r")
-    firstline = f.readline()
-
-    if has_been_processed_marker in firstline:
-        if ignore_HAS_BEEN_PROCESSED_MARKER:
-            lines = [firstline]  # so we don't duplicate the has-been-processed marker
-        else:
-            print("\t[IM] Found '{}' in source for build {}. Will stop.".format(has_been_processed_marker, key))
-            f.close()
-            return None
-    else:
-        lines = [firstline[:-1] + has_been_processed_marker + "\n"]
-
-    lines.extend(f.readlines())
+    lines = f.readlines()    
     f.close()
     return lines
 
-def maybe_readfile_as_string_and_insert_marker(path:str, has_been_processed_marker:str, ignore_HAS_BEEN_PROCESSED_MARKER:bool, key:str):
-    # print("in maybe_readfile_as_string_and_insert_marker")
+def readfile_as_string(path:str):    
     f = open(path, "r")
     filestr = f.read()
     f.close()
-    
-    # look in the first 100 characters only
-    if has_been_processed_marker in filestr[:100]: 
-        if not ignore_HAS_BEEN_PROCESSED_MARKER:
-            print("\t[IM] Found '{}' in source for build {}. Will stop.".format(has_been_processed_marker, key))
-            f.close()
-            return None            
-    else:
-        filestr = has_been_processed_marker + "\n" + filestr        
-
     return filestr
 
 def find_spot_for_console_msg(lines: List[str]) -> int:

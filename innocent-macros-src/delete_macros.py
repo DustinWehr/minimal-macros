@@ -1,6 +1,6 @@
 import sys, datetime, os
 
-from constants import HAS_BEEN_PROCESSED_MARKER__PRODUCTION, INSERT_CONSOLE_LOG_OF_BUILD_TIME
+from constants import INSERT_CONSOLE_LOG_OF_BUILD_TIME
 from common import *
 
 
@@ -11,16 +11,12 @@ def parse_macro_defs_file_to_macronames( macro_defs_file_path: str ) -> List[str
 	for_each_macro_def( macro_defs_file_path, handle_single_macro_def )
 	return macro_names
 
-def run_macro_deletion(path_to_macro_defs,  path_to_js_needing_processing, outfile_path, ignore_HAS_BEEN_PROCESSED_MARKER, key):
+def run_macro_deletion(path_to_macro_defs,  path_to_js_needing_processing, outfile_path, key):
 	filename = os.path.basename(path_to_js_needing_processing)
 	# print("File: " + filename)
 
 	starttime = perfcounter()
-	jsstr = maybe_readfile_as_string_and_insert_marker(
-		path_to_js_needing_processing, 
-		HAS_BEEN_PROCESSED_MARKER__PRODUCTION,
-		ignore_HAS_BEEN_PROCESSED_MARKER,
-		key )
+	jsstr = readfile_as_string(path_to_js_needing_processing)
 	if not jsstr:
 		return
 
@@ -61,12 +57,11 @@ def run_macro_deletion(path_to_macro_defs,  path_to_js_needing_processing, outfi
 		
 	curtime = datetime.datetime.now().strftime("%I:%M:%S")
 	if INSERT_CONSOLE_LOG_OF_BUILD_TIME:  
-		timestamp_print_command = "\nconsole.log('[{}] Build of {}');\n".format(filename, curtime);
-		# timestamp_print_command = "if(window.structure_together.dev_mode) { console.log('[IM] Build of {}'); }\n".format(curtime);
+		timestamp_print_command = "\nconsole.log('[{}] Build of {}');\n".format(filename, curtime);		
 		outfile.write(timestamp_print_command);
 	
 	outfile.close()
 
 	# print("[IM] {}: deleted {} lines (replaced with blank lines), {} milliseconds\n".format(curtime, deleted_lines, round(1000*(perfcounter() - starttime))))
-	print("\t[IM] Deleted {num} macro occurrences ({chars} chars), {time} ms".format(time=round(1000*(perfcounter() - starttime)), num=deleted_macros, chars=deleted_chars))
+	print("\t[IM] Deleted {num} macro occurrences, {time} ms ({chars} chars)".format(time=round(1000*(perfcounter() - starttime)), num=deleted_macros, chars=deleted_chars))
 
