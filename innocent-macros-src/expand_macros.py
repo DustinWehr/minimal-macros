@@ -1,8 +1,7 @@
-import sys, datetime, time, re, os
+import datetime, re, os
 from string import Formatter
-from typing import List, Dict
 
-from constants import VERBOSE_DEFAULT, END_BLOCK_COMMENT_RE, RE_FOR_STUFF_BEFORE_MACRO_NAME
+from constants import END_BLOCK_COMMENT_RE, RE_FOR_STUFF_BEFORE_MACRO_NAME
 from common import *
 from WarningMsg import WarningMsg
 from macro_defn_datastructures import MacroDefn
@@ -15,7 +14,7 @@ def svar(x):
     return "%" + x + "%"
 
 
-def parse_macro_defs_file_to_substitution_objects( macro_defs_file_path, verbose = VERBOSE_DEFAULT ):
+def parse_macro_defs_file_to_substitution_objects( macro_defs_file_path ):
     macros = {}
 
     def handle_single_macro_def(fnname, params_str, body_as_single_line):

@@ -7,10 +7,6 @@ DEBUGGING = True
 
 # used by common.py
 DEB_PRINT_ON = True
-# used in expand_macros.py
-VERBOSE_DEFAULT = True
-
-INSERT_CONSOLE_LOG_OF_BUILD_TIME = True
 
 NON_WORD_CHAR = "[^a-zA-Z0-9_$.]"
 
