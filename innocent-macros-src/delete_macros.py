@@ -1,6 +1,5 @@
-import sys, datetime, os
+import datetime, os
 
-from constants import INSERT_CONSOLE_LOG_OF_BUILD_TIME
 from common import *
 
 
@@ -11,7 +10,7 @@ def parse_macro_defs_file_to_macronames( macro_defs_file_path: str ) -> List[str
 	for_each_macro_def( macro_defs_file_path, handle_single_macro_def )
 	return macro_names
 
-def run_macro_deletion(path_to_macro_defs,  path_to_js_needing_processing, outfile_path, key):
+def run_macro_deletion(path_to_macro_defs,  path_to_js_needing_processing, outfile_path, key, insert_buildtime_console_log):
 	filename = os.path.basename(path_to_js_needing_processing)
 	# print("File: " + filename)
 
@@ -40,7 +39,7 @@ def run_macro_deletion(path_to_macro_defs,  path_to_js_needing_processing, outfi
 			break
 
 		macrostart = match.start()
-		outfile.write('0') # sometimes need to insert a noop in minified code
+		outfile.write('0') # sometimes need to insert a noop in minified code?
 		outfile.write(jsstr[nextwriteind:macrostart])
 
 		next_after_openparen = match.end()
@@ -54,9 +53,9 @@ def run_macro_deletion(path_to_macro_defs,  path_to_js_needing_processing, outfi
 		# print(jsstr[macrostart:nextwriteind])
 
 	outfile.write(jsstr[nextwriteind:])	
-		
-	curtime = datetime.datetime.now().strftime("%I:%M:%S")
-	if INSERT_CONSOLE_LOG_OF_BUILD_TIME:  
+
+	if insert_buildtime_console_log:
+		curtime = datetime.datetime.now().strftime("%I:%M:%S")
 		timestamp_print_command = "\nconsole.log('[{}] Build of {}');\n".format(filename, curtime);		
 		outfile.write(timestamp_print_command);
 	

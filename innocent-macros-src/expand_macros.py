@@ -2,7 +2,7 @@ import sys, datetime, time, re, os
 from string import Formatter
 from typing import List, Dict
 
-from constants import VERBOSE_DEFAULT, INSERT_CONSOLE_LOG_OF_BUILD_TIME, END_BLOCK_COMMENT_RE, RE_FOR_STUFF_BEFORE_MACRO_NAME
+from constants import VERBOSE_DEFAULT, END_BLOCK_COMMENT_RE, RE_FOR_STUFF_BEFORE_MACRO_NAME
 from common import *
 from WarningMsg import WarningMsg
 from macro_defn_datastructures import MacroDefn
@@ -27,7 +27,7 @@ def parse_macro_defs_file_to_substitution_objects( macro_defs_file_path, verbose
 
 formatter = Formatter()
 
-def run_macro_expansion(path_to_macro_defs, path_to_js_needing_processing, outfile_path, key):
+def run_macro_expansion(path_to_macro_defs, path_to_js_needing_processing, outfile_path, key, insert_buildtime_console_log):
     starttime = perfcounter()
     
     # Use readlines() instead of read() has very insignificant performance cost, at least on my SSD
@@ -67,7 +67,7 @@ def run_macro_expansion(path_to_macro_defs, path_to_js_needing_processing, outfi
 
     # NTS: I gave it a a good try at making "for line in file" work with inserting console log.
     # Not worth trying any more. See ABOUT PERFORMANCE.txt
-    if INSERT_CONSOLE_LOG_OF_BUILD_TIME:
+    if insert_buildtime_console_log:
         last_line_num_to_process = find_spot_for_console_msg(lines)
         if not last_line_num_to_process:
             last_line_num_to_process = len(lines) - 1    
@@ -162,8 +162,8 @@ def run_macro_expansion(path_to_macro_defs, path_to_js_needing_processing, outfi
 
 
     curtime = datetime.datetime.now().strftime("%I:%M:%S")
-    if INSERT_CONSOLE_LOG_OF_BUILD_TIME: #and ("structure-together-main" in path_to_js_needing_processing):
-        timestamp_print_command = "if(window.structure_together.dev_mode) {{ console.log('[{}] Build of {}'); }}\n".format(os.path.basename(path_to_js_needing_processing), curtime);
+    if insert_buildtime_console_log: #and ("structure-together-main" in path_to_js_needing_processing):
+        timestamp_print_command = "console.log('[{}] Build of {}');\n".format(os.path.basename(path_to_js_needing_processing), curtime);
         outfile.write(timestamp_print_command);
 
     for line in lines[last_line_num_to_process + 1: len(lines)]:

@@ -2,9 +2,11 @@ import time, re
 from typing import Callable, List, Dict, Union
 
 from constants import DEB_PRINT_ON, FIRST_LINE_OF_MULTILINE_MACRO_DEF_RE, NON_WORD_CHAR, SINGLELINE_MACRO_DEF_RE
+from Chunk import *
 
 brackets_open_to_closed = {'(':')', '[':']', '{':'}'}
 bracket_names = {'(':'parenthesis', '[':'square bracket', '{':'curly bracket'}
+
 
 
 def debprint(*args):
@@ -89,83 +91,6 @@ def escapeQuotes(x):
     # TODO: this is probably not a fully general solution
     return x.replace("'","\\'").replace('"','\\"').replace("`","\\`")
 
-class Chunk(object):
-    """
-    stop_line_stop_ind is INCLUSIVE
-    stop_line_stop_ind is None iff stop_line_num is None
-    A Chunk is "open" iff stop_line_num == None. It's "closed" otherwise.
-    """
-
-    def __init__(self,
-                 lines:List[str],
-                 start_line_num:int,
-                 start_line_start_ind:int,
-                 stop_line_num:int,
-                 stop_line_stop_ind:int
-                 ):
-        self.lines = lines
-        self.start_line_num = start_line_num
-        self.start_line_start_ind = start_line_start_ind
-
-        self.stop_line_num = stop_line_num
-        self.stop_line_stop_ind = stop_line_stop_ind
-
-        assert( stop_line_num is None or stop_line_stop_ind is not None )
-        assert( stop_line_num is not None or stop_line_stop_ind is None )
-
-
-    def delete_last_char(self):
-        if self.stop_line_stop_ind > 0:
-            self.stop_line_stop_ind -= 1
-        else:
-            assert self.stop_line_num >= 1, "Empty pararaph? " + repr(self)
-            self.stop_line_num -= 1
-            self.stop_line_stop_ind = len(
-                self.lines[self.stop_line_num]) - 1  # this is not necessarily the newline char (i think)
-
-    def asListOfLineStrings(self):
-        if self.stop_line_num is None or self.stop_line_stop_ind is None:
-            raise Exception("Method undefined on open chunk")
-        if self.start_line_num < self.stop_line_num:
-            rv = [self.lines[self.start_line_num][self.start_line_start_ind:]]
-            rv.extend(self.lines[self.start_line_num + 1: self.stop_line_num])
-            rv.append(self.lines[self.stop_line_num][:self.stop_line_stop_ind + 1])
-            return rv
-        else:
-            return [self.lines[self.start_line_num][self.start_line_start_ind:self.stop_line_stop_ind + 1]]
-
-    @staticmethod
-    def fromSingleLine(s:str) -> 'Chunk':
-        return Chunk([s], 0, 0, 0, len(s) - 1)
-
-    def asSingleLine(self):
-        if self.stop_line_num is None or self.stop_line_stop_ind is None:
-            raise Exception("Method undefined on open chunk")
-        return "".join(self.asListOfLineStrings())
-
-    def numbersTuple(self):
-        return self.start_line_num, self.start_line_start_ind, self.stop_line_num, self.stop_line_stop_ind
-
-    def __repr__(self):
-        return "Chunk({},{},{},{},{})".format(self.lines, self.start_line_num, self.start_line_start_ind,
-                                                  self.stop_line_num, self.stop_line_stop_ind)
-
-class ClosedChunk(Chunk):
-    def __init__(self,
-                 lines,
-                 start_line_num,
-                 start_line_start_ind,
-                 stop_line_num:int,
-                 stop_line_stop_ind:int):
-        assert(stop_line_num is not None and stop_line_stop_ind is not None)
-        Chunk.__init__(self, lines, start_line_num, start_line_start_ind, stop_line_num, stop_line_stop_ind)
-
-class OpenChunk(Chunk):
-    def __init__(self,
-                 lines,
-                 start_line_num,
-                 start_line_start_ind):
-        Chunk.__init__(self, lines, start_line_num, start_line_start_ind, None, None)
 
 def find_next_toplevel_in_str(s:str, start:int, char_to_find:str) -> int:
     chunk = OpenChunk([s], 0, start)

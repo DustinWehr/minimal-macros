@@ -37,20 +37,22 @@ def polling(macro_defs_path, src_file_paths, fns_when_test_true, use_dot_out):
 					
 		time.sleep(POLL_EVERY_SECONDS)
 
-def deletion_call_once(macro_defs_path, src_path, use_dot_out, key):
+def deletion_call_once(macro_defs_path, src_path, use_dot_out, key, insert_buildtime_console_log):
 	run_macro_deletion(
 		macro_defs_path, 
 		src_path, 
 		src_path + ".out" if use_dot_out else src_path,
-		key=key
+		key,
+		insert_buildtime_console_log
 	)
 
-def expansion_call_once(macro_defs_path, src_path, use_dot_out, key):
+def expansion_call_once(macro_defs_path, src_path, use_dot_out, key, insert_buildtime_console_log):
 	run_macro_expansion(
 		macro_defs_path,
 		src_path,
 		src_path + ".out" if use_dot_out else src_path,		
-		key=key
+		key,
+		insert_buildtime_console_log
 	)
 	
 def start_processing(config, args):
@@ -79,10 +81,10 @@ def start_processing(config, args):
 	for key,path in config['ABSPATHS_OF_FILES_WITH_MACRO_OCCURRENCES'].items():
 		print("[IM] Processing build '{}'".format(key))
 		if all_builds_delete_mode or (not all_builds_expand_mode and config['DEFAULT_ACTIONS'][key] == 'delete'):
-			deletion_call_once(config['TS_MACRO_DEFS_PATH'], path, use_dot_out, key)
+			deletion_call_once(config['TS_MACRO_DEFS_PATH'], path, use_dot_out, key, config['INSERT_BUILD_TIME_CONSOLE_MSG'][key])
 		else:
 			assert all_builds_expand_mode or (not all_builds_delete_mode and config['DEFAULT_ACTIONS'][key] == 'expand')
-			expansion_call_once(config['TS_MACRO_DEFS_PATH'], path, use_dot_out, key)		
+			expansion_call_once(config['TS_MACRO_DEFS_PATH'], path, use_dot_out, key, config['INSERT_BUILD_TIME_CONSOLE_MSG'][key])
 
 	if watch_mode:		
 		if all_builds_expand_mode:
