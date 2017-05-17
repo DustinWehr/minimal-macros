@@ -2,11 +2,7 @@ import re
 
 
 USING_EXTERNAL_MODULES = True # this is a Typescript thing
-
 DEBUGGING = True
-
-# used by common.py
-DEB_PRINT_ON = True
 
 NON_WORD_CHAR = "[^a-zA-Z0-9_$.]"
 

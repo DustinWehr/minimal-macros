@@ -1,7 +1,7 @@
 import time, re
 from typing import Callable, List, Dict, Union
 
-from constants import DEB_PRINT_ON, FIRST_LINE_OF_MULTILINE_MACRO_DEF_RE, NON_WORD_CHAR, SINGLELINE_MACRO_DEF_RE
+from constants import FIRST_LINE_OF_MULTILINE_MACRO_DEF_RE, NON_WORD_CHAR, SINGLELINE_MACRO_DEF_RE
 from Chunk import *
 
 brackets_open_to_closed = {'(':')', '[':']', '{':'}'}
@@ -9,11 +9,7 @@ bracket_names = {'(':'parenthesis', '[':'square bracket', '{':'curly bracket'}
 
 
 
-def debprint(*args):
-    if DEB_PRINT_ON:
-        print(args)
-
-def perfcounter():    
+def perfcounter():
     return time.clock()
     # pydocs say this is preferred if you're using python 3.x:
     # return time.perfcounter()
