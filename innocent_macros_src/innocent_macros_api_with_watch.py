@@ -41,7 +41,7 @@ def deletion_call_once(macro_defs_path, src_path, use_dot_out, key, insert_build
 	run_macro_deletion(
 		macro_defs_path, 
 		src_path, 
-		src_path + ".out" if use_dot_out else src_path,
+		src_path[:-2] + "out.js" if use_dot_out else src_path,
 		key,
 		insert_buildtime_console_log
 	)
@@ -50,7 +50,7 @@ def expansion_call_once(macro_defs_path, src_path, use_dot_out, key, insert_buil
 	run_macro_expansion(
 		macro_defs_path,
 		src_path,
-		src_path + ".out" if use_dot_out else src_path,		
+		src_path[:-2] + "out.js" if use_dot_out else src_path,
 		key,
 		insert_buildtime_console_log
 	)
@@ -62,7 +62,7 @@ def start_processing(config, args):
 		print('"-d" or "--delete" - Delete macros in all the watched files, overiding your config object\'s DEFAULT_ACTIONS')	
 		print('"-e" or "--expand" - Expand macros in all the watched files, overiding your config object\'s DEFAULT_ACTIONS')
 		print('"-w" or "--watch" - Watch the files in your config object for change. When a file changes, repeat the initial actions performed on it.')	
-		print('"-o" or "--overwrite" - Overwrite the input file with the macro expanded/deleted file. Otherwise, will append ".out" to the output filename.')
+		print('"-o" or "--overwrite" - Overwrite each input file X.js with the macro expanded/deleted file. Otherwise, will write to the file X.out.js.')
 		return
 
 	all_builds_delete_mode = "-d" in args or "--delete" in args
