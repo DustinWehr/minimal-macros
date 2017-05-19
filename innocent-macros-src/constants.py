@@ -27,7 +27,7 @@ SINGLELINE_MACRO_DEF_RE = re.compile("".join([
     # r"\s*\(([^)]*)\)",  # function parameters. This is incompatible with function types in params, and also unnecessary
     r"\s*\((.*)\)",  # function parameters
     r"\s*{\s*",      # opening {
-    r"(.+[^\s])",  # function body
+    r"(.+[^\s])",  # function body (without trailing whitespace)
     r"\s*}\s*$" # closing }
 ]))
 
