@@ -1,7 +1,6 @@
 *.pyc
 .idea
 /_old/
-/innocent-macros.sublime-project
-/innocent-macros.sublime-workspace
-/innocent_macros.sublime-workspace
+/minimal-macros.sublime-project
+/minimal-macros.sublime-workspace
 /__pycache__/

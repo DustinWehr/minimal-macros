@@ -2,8 +2,8 @@
 import sys, os
 
 # YOU WILL DEFINITELY NEED TO MODIFY THESE PATHS
-PROJECT_WITH_MACRO_OCCURRENCES_ROOT = "/Users/dustin/Sites/LfP/innocent-macros/test"
-INNOCENT_MACROS_SRC_PATH = "/Users/dustin/Sites/LfP/innocent-macros/innocent_macros_src"
+PROJECT_WITH_MACRO_OCCURRENCES_ROOT = "/Users/dustin/Sites/LfP/minimal-macros/test"
+INNOCENT_MACROS_SRC_PATH = "/Users/dustin/Sites/LfP/minimal-macros/src"
 
 # Below is my configuration for my (hopefully soon to be open source) project Structure Together.
 
@@ -42,5 +42,5 @@ config = {
 if __name__ == "__main__":
 	import sys
 	sys.path.append(INNOCENT_MACROS_SRC_PATH)
-	from innocent_macros_api_with_watch import start_processing
+	from minimal_macros_api_with_watch import start_processing
 	start_processing(config, sys.argv)

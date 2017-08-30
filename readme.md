@@ -9,7 +9,7 @@ Minimally-expressive macros for Typescript/Javascript, appropriate for inlining 
 
 Has a simple multiple file watching solution, so you don't need to integrate it into your build script. Instead, you (easily) set it up to **run on the final js file outputs of your build script, overwriting the file**. If you're *not* generating any javascript (so not using webpack, browserify, typescript, babel, minifying, etc), and you still want to use Minimal Macros, you also have the option to write to a file of the same name but with the extension ".out.js" instead of ".js" (**obviously do this if your source code is the javascript that you'll be serving**, which could be the case if you have a small or teaching-related project).
 
-Essentially all it does is inline or strip commands according to a [simple configuration file](./innocent_macros_src/YOUR_PROJECT_SPECIFIC_MAIN_FILE_TO_MODIFY.py), where the action to be done can depend on a build key and the watched file. Your macro commands can be typed and can use a ...rest parameter. For anything more complex, you'll want to use [sweet.js](https://www.sweetjs.org/).
+Essentially all it does is inline or strip commands according to a [simple configuration file](./src/YOUR_PROJECT_SPECIFIC_MAIN_FILE_TO_MODIFY.py), where the action to be done can depend on a build key and the watched file. Your macro commands can be typed and can use a ...rest parameter. For anything more complex, you'll want to use [sweet.js](https://www.sweetjs.org/).
 
 Design constraints:
 
@@ -18,9 +18,9 @@ Design constraints:
 * Currently preserves line numbers. This isn't a hard constraint, in that if someone wants to add support for source maps, or explain to me why it's really easy so I can do it myself, I'm on board.
 
 ## Usage
-First set at least the two path variables at the top of `innocent_macros_src/YOUR_PROJECT_SPECIFIC_MAIN_FILE_TO_MODIFY.py`. That should be enough to run the tests. Then:
+First set at least the two path variables at the top of `src/YOUR_PROJECT_SPECIFIC_MAIN_FILE_TO_MODIFY.py`. That should be enough to run the tests. Then:
 
-    python3 innocent_macros_src/YOUR_PROJECT_SPECIFIC_MAIN_FILE_TO_MODIFY.py -h
+    python3 src/YOUR_PROJECT_SPECIFIC_MAIN_FILE_TO_MODIFY.py -h
 If that works, make a copy of `YOUR_PROJECT_SPECIFIC_MAIN_FILE_TO_MODIFY.py`, name it something better, and put it in your project's repo (not your clone of Minimal Macros), and set the remaining configuration options in it.
 
 ## Improvements I'll do if there is interest
@@ -39,7 +39,7 @@ Check the issues to make sure somebody isn't already working on it. Then make an
 ## Tests
 This project does not yet use a testing library, but you can run it on the source code for which it was developed as follows.
 
-First set the two path variables at the top of `innocent_macros_src/YOUR_PROJECT_SPECIFIC_MAIN_FILE_TO_MODIFY.py`.
+First set the two path variables at the top of `src/YOUR_PROJECT_SPECIFIC_MAIN_FILE_TO_MODIFY.py`.
 
 Then
 
