@@ -4,6 +4,11 @@ from copy import copy
 from constants import DEBUGGING
 from common import split_by_top_level_commas, Chunk, escapeQuotes, couldBeToken, inStrLiteral, updateInStrLit
 
+# **NOTE (30 Aug 2017)** I think I disabled this feature in lieu of fixing its bugs.
+# If arg1 is a macro fn param that, in a macro occurrence, gets set to the value (in python) "x != 'a'",
+# then (SVAR_LEFT + arg1 + SVAR_RIGHT), in the same macro occurrence, gets set to the value
+# (in python) "x != \'a\'".
+# This is used, for example, to print the failed test when an assertion fails.
 SVAR_LEFT = "%"
 SVAR_RIGHT = "%"
 

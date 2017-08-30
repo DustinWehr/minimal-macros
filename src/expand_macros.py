@@ -7,14 +7,6 @@ from WarningMsg import WarningMsg
 from macro_defn_datastructures import MacroDefn
 
 
-# e.g. if arg1 is a param that, in a macro occurrence, gets set to the value (in python) "x != 'a'",
-# then svar(arg1) is an implicit param that, in the same macro occurrence, gets set to the value (in python)
-# "x != \'a\'".
-# NOTE (30 Aug 2017) I think I disabled this feature in lieu of fixing its bugs.
-def svar(x):
-    return "%" + x + "%"
-
-
 def parse_macro_defs_file_to_substitution_objects( macro_defs_file_path ):
     macros = {}
 
