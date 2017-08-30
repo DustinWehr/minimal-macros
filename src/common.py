@@ -169,7 +169,7 @@ def find_next_toplevel(chunk:Chunk, char_to_find:str) -> Union[ClosedChunk,None]
 
 
             if unmatchedCloseBracket(bracket_cnts):
-                msg = "[IM] There seems to be an unmatched close-paren/bracket in line {}[1-based], found while looking for the next '{}'.\n".format(
+                msg = "[MM] There seems to be an unmatched close-paren/bracket in line {}[1-based], found while looking for the next '{}'.\n".format(
                     line_num + 1, char_to_find)
 
                 for b in bracket_cnts.keys():
@@ -193,7 +193,7 @@ def find_next_toplevel(chunk:Chunk, char_to_find:str) -> Union[ClosedChunk,None]
     # next checks aren't necessary if macros file has been parsed by tsc:
     if not bracketsBalanced(bracket_cnts) or inStrLiteral(in_str_lit):
         print(repr(chunk))
-        msg = "[IM] Unclosed paren/bracket or quote at line {} (1-based)?\n".format(line_num + 1)
+        msg = "[MM] Unclosed paren/bracket or quote at line {} (1-based)?\n".format(line_num + 1)
         for b in bracket_cnts.keys():
             if bracket_cnts[b] < 0:  msg += "Unclosed " + bracket_names[b] + "\n"
         for q in in_str_lit.keys():
@@ -280,7 +280,7 @@ def for_each_macro_def(macro_defs_file_path:str, f:Callable[[str,str,str],None])
     while i < len(macro_defs_file_lines):
         line = macro_defs_file_lines[i]
         if line.startswith("//STOP"):
-            print("[IM] Found '//STOP' in macro defs file")
+            print("[MM] Found '//STOP' in macro defs file")
             return
         # match = SINGLELINE_NONVOID_MACRO_DEF_RE.match(line)
         # if match:

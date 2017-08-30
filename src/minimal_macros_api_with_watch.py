@@ -25,14 +25,14 @@ def polling(macro_defs_path, src_file_paths, fns_when_test_true, use_dot_out):
 			file_last_mod_time_seconds = os.stat(path).st_mtime_ns / ONE_BILLION
 			difference = abs(approx_last_mod_time_seconds[key] - file_last_mod_time_seconds)
 			if difference >= MIN_SECONDS_DIFF:
-				print("[IM] Processing build '{}'.".format(key))
+				print("[MM] Processing build '{}'.".format(key))
 				fns_when_test_true[key](macro_defs_path, path, use_dot_out, key)
 				# approx_last_mod_time_seconds[key] = file_last_mod_time # doesn't work because of ansynchronous persistent storage write
 				approx_last_mod_time_seconds[key] = time.time()
 				skipped_notif[key] = False					
 			else:
 				if not skipped_notif[key]:
-					print("[IM] File mod time within {} second(s) of last run for build '{}'. Skipping.".format(MIN_SECONDS_DIFF, key))
+					print("[MM] File mod time within {} second(s) of last run for build '{}'. Skipping.".format(MIN_SECONDS_DIFF, key))
 					skipped_notif[key] = True								
 					
 		time.sleep(POLL_EVERY_SECONDS)
@@ -73,14 +73,14 @@ def start_processing(config, args):
 	assert not (all_builds_delete_mode and all_builds_expand_mode)	
 
 	if not (all_builds_expand_mode or all_builds_delete_mode):
-		print("\n[IM] No '-d' ('--delete') or '-e' ('--expand') arg given, so using your config object to determine which files to expand/delete macros in.")		
+		print("\n[MM] No '-d' ('--delete') or '-e' ('--expand') arg given, so using your config object to determine which files to expand/delete macros in.")		
 		if not 'DEFAULT_ACTIONS' in config:
-			print("\n[IM] ...but your config object does contain a 'DEFAULT_ACTIONS' key, so can't do that. Exiting.")
+			print("\n[MM] ...but your config object does contain a 'DEFAULT_ACTIONS' key, so can't do that. Exiting.")
 
 	use_dot_out = not config['DEFAULT_OVERWRITE'] and not ( "-o" in args or '--overwrite' in args)
 
 	for key,path in config['ABSPATHS_OF_FILES_WITH_MACRO_OCCURRENCES'].items():
-		print("[IM] Processing build '{}'".format(key))
+		print("[MM] Processing build '{}'".format(key))
 		if all_builds_delete_mode or (not all_builds_expand_mode and config['DEFAULT_ACTIONS'][key] == 'delete'):
 			deletion_call_once(config['TS_MACRO_DEFS_PATH'], path, use_dot_out, key, config['INSERT_BUILD_TIME_CONSOLE_MSG'][key])
 		else:
@@ -96,6 +96,6 @@ def start_processing(config, args):
 			fns = {k: expansion_call_once if config['DEFAULT_ACTIONS'][k] == 'expand' else 
 					 (deletion_call_once if config['DEFAULT_ACTIONS'][k] == 'delete' else None) for k in config['DEFAULT_ACTIONS'].keys()}
 
-		print("\n[IM] Starting watch mode")
+		print("\n[MM] Starting watch mode")
 		polling(config['TS_MACRO_DEFS_PATH'],config['ABSPATHS_OF_FILES_WITH_MACRO_OCCURRENCES'], fns, use_dot_out)
 		
