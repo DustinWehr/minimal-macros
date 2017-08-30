@@ -21,10 +21,10 @@ export function weakassert(test:boolean, msg?:string, ...args_for_console:any[])
 		console.error(args_for_console);
 
 		if (msg) {
-			console.error("Failed assertion %test%\n" + msg + "\n");
+			console.error("Failed assertion\n" + msg + "\n");
 		}
 		else {
-			console.error("Failed assertion %test%\n");
+			console.error("Failed assertion\n");
 		}
 	}
 }
@@ -34,10 +34,10 @@ export function dassert(test:boolean, msg?:string, ...args_for_console:any[]) {
 		console.error(args_for_console);
 
 		if (msg) {
-			throw new Error("Failed assertion %test%\n" + msg + "\n");
+			throw new Error("Failed assertion\n" + msg + "\n");
 		}
 		else {
-			throw new Error("Failed assertion %test%\n");
+			throw new Error("Failed assertion\n");
 		}
 	}
 }
@@ -119,12 +119,20 @@ export function derrif(cond:boolean, ...args_for_console:any[]) {
 		console.error(args_for_console);
 	}
 }
+export function assert_nt(expr:any) {
+	if ( window.structure_together.assertions_enabled ) {
+		let should_be_nontrivial = expr;
+		if (should_be_nontrivial === null || should_be_nontrivial === undefined) {
+			throw new Error("Should not be null or undefined");
+		}
+	}
+}
 
-export function assert_nt(...exprs:any[]) {
+export function assert_nt_many(...exprs:any[]) {
 	if ( window.structure_together.assertions_enabled ) {
 		argsForEach((x, i) => {
 			if (x === null || x === undefined) {
-				throw new Error("Element " + i.toString() + " of (%exprs%) should not be null or undefined.");
+				throw new Error("Expression " + i.toString() + " should not be null or undefined.");
 			}
 		}, exprs);
 	}
