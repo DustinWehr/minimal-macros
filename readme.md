@@ -17,6 +17,11 @@ Design constraints:
 * The pre-macro-expanded code should be valid TypeScript/JavaScript that does basically the same thing as the expanded code. So you don't ever NEED to run the expand/strip script.
 * Currently preserves line numbers. This isn't a hard constraint, in that if someone wants to add support for source maps, or explain to me why it's really easy so I can do it myself, I'm on board.
 
+## Requirements
+
+Python 3.x. On my mac, `python3` and `python3.6` are aliases to it that I don't think I created.
+
+
 ## Usage
 First set at least the two path variables at the top of `src/YOUR_PROJECT_SPECIFIC_MAIN_FILE_TO_MODIFY.py`. That should be enough to run the tests. Then:
 
@@ -39,17 +44,13 @@ Check the issues to make sure somebody isn't already working on it. Then make an
 ## Tests
 This project does not yet use a testing library, but you can run it on the source code for which it was developed as follows.
 
-First set the two path variables at the top of `src/YOUR_PROJECT_SPECIFIC_MAIN_FILE_TO_MODIFY.py`.
+First set the two path variables at the top of `src/YOUR_PROJECT_SPECIFIC_MAIN_FILE_TO_MODIFY.py` so that they have the correct root for where this repo is located on your computer.
 
-Then
+Then `python3 test/run_tests.py`
 
-```
-python3 test/run_tests.py
-```
 
 ## Buy me hookers
 
-```
-bitcoin 
 ethereum 0x113D773A229F4766CbaD4a04D97cc9d1956eb69C
-```
+
+bitcoin... if you like to blow money on txn fees: 1Aew1EipavVshFCFEqT4vpptVuZPCP8Ehn
