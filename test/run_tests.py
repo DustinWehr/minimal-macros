@@ -18,6 +18,7 @@ I believe the numbers 763, 759, 699 are different because of dead code eliminati
 	[MM] Deleted 699 macro occurrences, 176 ms
 
 TEST STARTING NOW
+------------------------------------
 """)
 
 

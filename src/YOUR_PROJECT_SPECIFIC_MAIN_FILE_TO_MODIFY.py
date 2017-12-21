@@ -4,6 +4,7 @@ import sys, os
 # YOU WILL DEFINITELY NEED TO MODIFY THESE PATHS
 PROJECT_WITH_MACRO_OCCURRENCES_ROOT = "/Users/dustin/Sites/LfP/minimal-macros/test"
 INNOCENT_MACROS_SRC_PATH = "/Users/dustin/Sites/LfP/minimal-macros/src"
+MACROS_FILE_RELPATH = "structure_together_macros.ts_"
 
 # Below is my configuration for my (hopefully soon to be open source) project Structure Together.
 
@@ -17,17 +18,18 @@ INNOCENT_MACROS_SRC_PATH = "/Users/dustin/Sites/LfP/minimal-macros/src"
 # scc for Simple-mode Closure Compiler
 # acc for Advanced-mode Closure Compiler
 RELPATHS_OF_FILES_WITH_MACRO_OCCURRENCES = {
-    'dev': "structure-together-main.webpack-entry-chunk--dev.js",
-	'scc': "structure-together-main.webpack-entry-chunk--scc.js",
-    'acc': "structure-together-main.webpack-entry-chunk--acc.js"
+	# note file extensions changed so github doesn't think this is a js project
+    'dev': "structure-together-main.webpack-entry-chunk--dev.js_",
+	'scc': "structure-together-main.webpack-entry-chunk--scc.js_",
+    'acc': "structure-together-main.webpack-entry-chunk--acc.js_"
 }
 
 abspaths = {k: os.path.join(PROJECT_WITH_MACRO_OCCURRENCES_ROOT, RELPATHS_OF_FILES_WITH_MACRO_OCCURRENCES[k]) for k in RELPATHS_OF_FILES_WITH_MACRO_OCCURRENCES.keys()}
 
-config = {	
+config = {
 	'DEFAULT_OVERWRITE': False,
-	'TS_MACRO_DEFS_PATH': os.path.join(PROJECT_WITH_MACRO_OCCURRENCES_ROOT, "structure_together_macros.ts"),
-	'ABSPATHS_OF_FILES_WITH_MACRO_OCCURRENCES':  abspaths, 
+	'TS_MACRO_DEFS_PATH': os.path.join(PROJECT_WITH_MACRO_OCCURRENCES_ROOT, MACROS_FILE_RELPATH),
+	'ABSPATHS_OF_FILES_WITH_MACRO_OCCURRENCES':  abspaths,
 	'DEFAULT_ACTIONS' : {
 		'dev': 'expand',
 		'scc': 'delete',
