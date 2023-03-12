@@ -47,10 +47,3 @@ This project does not yet use a testing library, but you can run it on the sourc
 First set the two path variables at the top of `src/YOUR_PROJECT_SPECIFIC_MAIN_FILE_TO_MODIFY.py` so that they have the correct root for where this repo is located on your computer.
 
 Then `python3 test/run_tests.py`
-
-
-## Buy me hookers
-
-ethereum 0x113D773A229F4766CbaD4a04D97cc9d1956eb69C
-
-bitcoin... if you like to blow money on txn fees: 1Aew1EipavVshFCFEqT4vpptVuZPCP8Ehn
